@@ -255,7 +255,7 @@ void editor_process_key(int key) {
                 if (editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
                 break;
             default:
-                if (key >= 32 && key < 127 || key == '\n' || key == '\t') {
+                if ((key >= 32 && key < 127) || key == '\n' || key == '\t') {
                     int len = my_strlen(editor_buffer);
                     if (len < MAX_CONTENT - 1) {
                         for (int i = len; i > editor_cursor; i--) {

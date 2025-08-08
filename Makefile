@@ -37,45 +37,48 @@ $(BUILD_DIR)/boot.bin: src/boot.asm $(BUILD_DIR)
 $(BUILD_DIR)/kernel_entry.o: src/kernel_entry.asm $(BUILD_DIR)
 	nasm $< -f elf32 -o $@
 
+# تعريف متغيرات التجميع
+CFLAGS = -m32 -ffreestanding -fno-pic -fno-pie -Wall -Wextra -Iinclude
+
 # تجميع ملف kernel.c
 $(BUILD_DIR)/kernel.o: src/kernel.c $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف fat32.c
 $(BUILD_DIR)/fat32.o: src/fat32.c include/fat32.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف string_utils.c
 $(BUILD_DIR)/string_utils.o: src/string_utils.c include/string_utils.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف command_handler.c
 $(BUILD_DIR)/command_handler.o: src/command_handler.c include/command_handler.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف display.c
 $(BUILD_DIR)/display.o: src/display.c include/display.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف io.c
 $(BUILD_DIR)/io.o: src/io.c include/io.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف keyboard.c
 $(BUILD_DIR)/keyboard.o: src/keyboard.c include/keyboard.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف filesystem.c
 $(BUILD_DIR)/filesystem.o: src/filesystem.c include/filesystem.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف editor.c
 $(BUILD_DIR)/editor.o: src/editor.c include/editor.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف shell.c
 $(BUILD_DIR)/shell.o: src/shell.c include/shell.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
+	gcc $(CFLAGS) -c $< -o $@
 
 # ربط ملفات النواة
 $(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/fat32.o $(BUILD_DIR)/string_utils.o $(BUILD_DIR)/display.o $(BUILD_DIR)/io.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/filesystem.o $(BUILD_DIR)/editor.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/command_handler.o

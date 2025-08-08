@@ -6,7 +6,7 @@
 #include "fat32.h"
 
 // Command handler functions
-static void cmd_clear(char* args) {
+static void cmd_clear(char* args __attribute__((unused))) {
     clear_screen();
 }
 
@@ -118,7 +118,7 @@ static void cmd_cd(char* args) {
     }
 }
 
-static void cmd_pwd(char* args) {
+static void cmd_pwd(char* args __attribute__((unused))) {
     char path[256];
     get_current_path(path);
     shell_print_string(path);
