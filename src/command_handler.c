@@ -4,7 +4,6 @@
 #include "shell.h"
 #include "string_utils.h"
 #include "fat32.h"
-#include "editor.h"
 
 // Command handler functions
 static void cmd_clear(char* args) {
