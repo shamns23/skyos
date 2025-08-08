@@ -33,12 +33,6 @@ _start:
     ; حلقة لا نهائية
     jmp $
 
-section .bss
-align 16
-stack_bottom:
-    resb 16384 ; 16 KiB
-stack_top:
-
 ; Timer interrupt handler (IRQ0)
 global irq0_handler
 irq0_handler:
@@ -46,6 +40,11 @@ irq0_handler:
     call timer_handler
     popa
     iretd
+
+section .bss
+stack_bottom:
+    resb 16384 ; 16 KiB
+stack_top:
 
 ; إضافة .note.GNU-stack section لحل التحذير
 section .note.GNU-stack noalloc noexec nowrite progbits

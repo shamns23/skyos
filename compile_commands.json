@@ -1,0 +1,47 @@
+[
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/fat32.c -o build/fat32.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/fat32.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/kernel.c -o build/kernel.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/kernel.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/string_utils.c -o build/string_utils.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/string_utils.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/display.c -o build/display.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/display.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/io.c -o build/io.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/io.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/keyboard.c -o build/keyboard.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/keyboard.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/filesystem.c -o build/filesystem.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/filesystem.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/editor.c -o build/editor.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/editor.c"
+  },
+  {
+    "directory": "/home/dddddd/newos/os2",
+    "command": "gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/shell.c -o build/shell.o -I/home/dddddd/newos/os2/include",
+    "file": "/home/dddddd/newos/os2/src/shell.c"
+  }
+]
