@@ -4,9 +4,9 @@
 BUILD_DIR = build
 ISO_DIR = $(BUILD_DIR)/iso
 
-C_SOURCES = $(wildcard *.c)
-HEADERS = $(wildcard *.h)
-OBJS = $(addprefix $(BUILD_DIR)/, ${C_SOURCES:.c=.o} kernel_entry.o)
+C_SOURCES = $(wildcard src/*.c)
+HEADERS = $(wildcard include/*.h)
+OBJS = $(addprefix $(BUILD_DIR)/, $(notdir ${C_SOURCES:.c=.o}) kernel_entry.o)
 
 # إنشاء مجلد البناء
 $(BUILD_DIR):
@@ -30,24 +30,24 @@ $(ISO_DIR)/boot/grub/grub.cfg: $(BUILD_DIR)
 	@echo '}' >> $@
 
 # تجميع ملف boot.asm
-$(BUILD_DIR)/boot.bin: boot.asm $(BUILD_DIR)
+$(BUILD_DIR)/boot.bin: src/boot.asm $(BUILD_DIR)
 	nasm $< -f bin -o $@
 
 # تجميع ملف kernel_entry.asm
-$(BUILD_DIR)/kernel_entry.o: kernel_entry.asm $(BUILD_DIR)
+$(BUILD_DIR)/kernel_entry.o: src/kernel_entry.asm $(BUILD_DIR)
 	nasm $< -f elf32 -o $@
 
 # تجميع ملف kernel.c
-$(BUILD_DIR)/kernel.o: kernel.c $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@
+$(BUILD_DIR)/kernel.o: src/kernel.c $(BUILD_DIR)
+	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
 
 # تجميع ملف fat32.c
-$(BUILD_DIR)/fat32.o: fat32.c fat32.h $(BUILD_DIR)
-	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@
+$(BUILD_DIR)/fat32.o: src/fat32.c include/fat32.h $(BUILD_DIR)
+	gcc -m32 -ffreestanding -fno-pic -fno-pie -c $< -o $@ -Iinclude
 
 # ربط ملفات النواة
 $(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/fat32.o
-	ld -m elf_i386 -o $@ -T linker.ld $^ -nostdlib
+	ld -m elf_i386 -o $@ -T config/linker.ld $^ -nostdlib
 
 # تشغيل نظام التشغيل باستخدام QEMU
 run: all

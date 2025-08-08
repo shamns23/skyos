@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# Change to project root directory
+cd "$(dirname "$0")/.."
 
 # Run make clean
 if ! make clean; then

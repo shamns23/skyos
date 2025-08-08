@@ -1,1 +1,24 @@
+# Build directory
 build/
+
+# Object files
+*.o
+*.elf
+*.bin
+*.iso
+
+# Editor temporary files
+*~
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Log files
+*.log

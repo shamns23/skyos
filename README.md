@@ -13,15 +13,20 @@ SkyOS is an advanced operating system written in C and Assembly, featuring a cus
 ## Project Structure
 
 ```
-├── kernel.c          # Main kernel implementation
-├── fat32.c           # FAT32 file system driver
-├── fat32.h           # FAT32 header definitions
-├── kernel_entry.asm  # Assembly kernel entry point
-├── boot.asm          # Boot sector code
-├── linker.ld         # Linker script
+├── src/              # Source code files
+│   ├── kernel.c      # Main kernel implementation
+│   ├── fat32.c       # FAT32 file system driver
+│   ├── kernel_entry.asm # Assembly kernel entry point
+│   └── boot.asm      # Boot sector code
+├── include/          # Header files
+│   └── fat32.h       # FAT32 header definitions
+├── config/           # Configuration files
+│   └── linker.ld     # Linker script
+├── scripts/          # Utility scripts
+│   └── run.sh        # Quick run script
+├── build/            # Build output directory
 ├── Makefile          # Build configuration
-├── grub.cfg          # GRUB configuration
-└── run.sh            # Quick run script
+└── README.md         # Project documentation
 ```
 
 ## Building
