@@ -117,7 +117,7 @@ unsigned char* fat32_get_cluster_data(unsigned int cluster) {
 // FAT32 Initialization
 int fat32_format(unsigned int total_size_kb) {
     // Clear disk buffer
-    for (int i = 0; i < sizeof(disk_buffer); i++) {
+    for (unsigned int i = 0; i < sizeof(disk_buffer); i++) {
         disk_buffer[i] = 0;
     }
     
@@ -465,7 +465,7 @@ int fat32_create_directory(const char* dirname, unsigned int parent_cluster) {
     FAT32_DirEntry *new_entries = (FAT32_DirEntry*)new_dir_data;
     
     // Clear directory
-    for (int i = 0; i < cluster_size; i++) {
+    for (unsigned int i = 0; i < cluster_size; i++) {
         new_dir_data[i] = 0;
     }
     

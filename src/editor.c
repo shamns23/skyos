@@ -34,14 +34,14 @@ void editor_display() {
     shell_print_string("\n");
     
     // Display buffer content with cursor
-    for (int i = 0; i < my_strlen(editor_buffer); i++) {
-        if (i == editor_cursor && editor_mode == EDITOR_MODE_INSERT) {
+    for (size_t i = 0; i < my_strlen(editor_buffer); i++) {
+        if ((int)i == editor_cursor && editor_mode == EDITOR_MODE_INSERT) {
             shell_print_colored("|", COLOR_WARNING, BLACK);
         }
         shell_print_char(editor_buffer[i]);
     }
     
-    if (editor_cursor >= my_strlen(editor_buffer) && editor_mode == EDITOR_MODE_INSERT) {
+    if ((size_t)editor_cursor >= my_strlen(editor_buffer) && editor_mode == EDITOR_MODE_INSERT) {
         shell_print_colored("|", COLOR_WARNING, BLACK);
     }
     
@@ -111,7 +111,7 @@ void editor_process_key(int key) {
                 editor_cmdline[len - 1] = '\0';
             }
         } else if (key >= 32 && key < 127) {
-            int len = my_strlen(editor_cmdline);
+            size_t len = my_strlen(editor_cmdline);
             if (len < sizeof(editor_cmdline) - 1) {
                 editor_cmdline[len] = key;
                 editor_cmdline[len + 1] = '\0';
@@ -135,15 +135,15 @@ void editor_process_key(int key) {
                 break;
             case 'l':
             case ARROW_RIGHT:
-                if (editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
+                if ((size_t)editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
                 break;
             case 'j':
             case ARROW_DOWN:
                 // Move down one line (simplified)
-                while (editor_cursor < my_strlen(editor_buffer) && editor_buffer[editor_cursor] != '\n') {
+                while ((size_t)editor_cursor < my_strlen(editor_buffer) && editor_buffer[editor_cursor] != '\n') {
                     editor_cursor++;
                 }
-                if (editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
+                if ((size_t)editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
                 break;
             case 'k':
             case ARROW_UP:
@@ -165,15 +165,15 @@ void editor_process_key(int key) {
             case '$':
             case KEY_END_CODE:
                 // Move to end of line
-                while (editor_cursor < my_strlen(editor_buffer) && editor_buffer[editor_cursor] != '\n') {
+                while ((size_t)editor_cursor < my_strlen(editor_buffer) && editor_buffer[editor_cursor] != '\n') {
                     editor_cursor++;
                 }
                 break;
             case 'x':
                 // Delete character
-                if (editor_cursor < my_strlen(editor_buffer)) {
-                    int len = my_strlen(editor_buffer);
-                    for (int i = editor_cursor; i < len; i++) {
+                if ((size_t)editor_cursor < my_strlen(editor_buffer)) {
+                    size_t len = my_strlen(editor_buffer);
+                    for (size_t i = editor_cursor; i < len; i++) {
                         editor_buffer[i] = editor_buffer[i + 1];
                     }
                 }
@@ -236,7 +236,7 @@ void editor_process_key(int key) {
                 if (editor_cursor > 0) editor_cursor--;
                 break;
             case ARROW_RIGHT:
-                if (editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
+                if ((size_t)editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
                 break;
             case ARROW_UP:
                 // Move up one line (simplified)
@@ -249,10 +249,10 @@ void editor_process_key(int key) {
                 break;
             case ARROW_DOWN:
                 // Move down one line (simplified)
-                while (editor_cursor < my_strlen(editor_buffer) && editor_buffer[editor_cursor] != '\n') {
+                while ((size_t)editor_cursor < my_strlen(editor_buffer) && editor_buffer[editor_cursor] != '\n') {
                     editor_cursor++;
                 }
-                if (editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
+                if ((size_t)editor_cursor < my_strlen(editor_buffer)) editor_cursor++;
                 break;
             default:
                 if ((key >= 32 && key < 127) || key == '\n' || key == '\t') {
