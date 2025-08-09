@@ -23,6 +23,7 @@ void clear_screen() {
     }
     cursor_x = 0;
     cursor_y = 0;
+    enable_cursor(14, 15);  // Enable cursor with standard shape
     update_cursor(cursor_x, cursor_y);
 }
 

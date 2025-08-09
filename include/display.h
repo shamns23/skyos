@@ -48,6 +48,8 @@ extern int current_fg_color;
 extern int current_bg_color;
 
 // Function declarations
+void enable_cursor(unsigned char cursor_start, unsigned char cursor_end);
+void disable_cursor();
 void update_cursor(int x, int y);
 void clear_screen();
 void set_color(int fg, int bg);
