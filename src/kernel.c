@@ -88,29 +88,29 @@ void process_cmd(char* cmd) {
     }
     
     // Check if command was already handled by new system
-    if (my_strncmp(command, "clear", 5) == 0 ||
-        my_strncmp(command, "help", 4) == 0 ||
-        my_strncmp(command, "ls", 2) == 0 ||
-        my_strncmp(command, "cd", 2) == 0 ||
-        my_strncmp(command, "pwd", 3) == 0 ||
-        my_strncmp(command, "mkdir", 5) == 0 ||
-        my_strncmp(command, "cat", 3) == 0 ||
-        my_strncmp(command, "rm", 2) == 0 ||
-        my_strncmp(command, "chmod", 5) == 0 ||
-        my_strncmp(command, "touch", 5) == 0 ||
-        my_strncmp(command, "color", 5) == 0 ||
-        my_strncmp(command, "sysinfo", 7) == 0 ||
-        my_strncmp(command, "fastfetch", 9) == 0 ||
-        my_strncmp(command, "write", 5) == 0 ||
-        my_strncmp(command, "run", 3) == 0 ||
-        my_strncmp(command, "shutdown", 8) == 0 ||
-        my_strncmp(command, "fat32", 5) == 0 ||
-        my_strncmp(command, "debug", 5) == 0) {
+    if (strcmp(command, "clear") == 0 ||
+        strcmp(command, "help") == 0 ||
+        strcmp(command, "ls") == 0 ||
+        strcmp(command, "cd") == 0 ||
+        strcmp(command, "pwd") == 0 ||
+        strcmp(command, "mkdir") == 0 ||
+        strcmp(command, "cat") == 0 ||
+        strcmp(command, "rm") == 0 ||
+        strcmp(command, "chmod") == 0 ||
+        strcmp(command, "touch") == 0 ||
+        strcmp(command, "color") == 0 ||
+        strcmp(command, "sysinfo") == 0 ||
+        strcmp(command, "fastfetch") == 0 ||
+        strcmp(command, "write") == 0 ||
+        strcmp(command, "run") == 0 ||
+        strcmp(command, "shutdown") == 0 ||
+        strcmp(command, "fat32") == 0 ||
+        strcmp(command, "debug") == 0) {
         return; // Already handled by new system
     }
     
     // Legacy commands (to be migrated)
-    if (my_strncmp(command, "write", 5) == 0) {
+    if (strcmp(command, "write") == 0) {
         char* filename = strtok_r(NULL, " ", &saveptr);
         char* content_start = strchr(saveptr, '"');
         if (filename && content_start) {
@@ -167,64 +167,6 @@ void process_cmd(char* cmd) {
             shell_print_string("Usage: write <filename> \"content\"\n");
         }
         return;
-    } else if (my_strncmp(command, "write", 5) == 0) {
-        char* filename = strtok_r(NULL, " ", &saveptr);
-        char* content_start = strchr(saveptr, '"');
-        if (filename && content_start) {
-            content_start++; 
-            char* content_end = strchr(content_start, '"');
-            if (content_end) {
-                *content_end = '\0'; 
-                int file_index = resolve_path_full(filename, 1);
-                if (file_index != -1) {
-                    if (filesystem[file_index].type != TYPE_FILE) {
-                        shell_print_string("Not a file: ");
-                        shell_print_string(filename);
-                        shell_print_string("\n");
-                    } else if (!(filesystem[file_index].permissions & 2)) {
-                        shell_print_string("Permission denied: ");
-                        shell_print_string(filename);
-                        shell_print_string(" is not writable\n");
-                    } else {
-                        strcpy(filesystem[file_index].content, content_start);
-                        filesystem[file_index].size = 0;
-                        while (content_start[filesystem[file_index].size]) {
-                            filesystem[file_index].size++;
-                        }
-                    }
-                } else {
-                    char pathcpy[256]; strcpy(pathcpy, filename);
-                    char* lastslash = NULL;
-                    for (char* p = pathcpy; *p; p++) if (*p == '/') lastslash = p;
-                    int parent_dir = current_dir;
-                    char* fname = pathcpy;
-                    if (lastslash) {
-                        *lastslash = '\0';
-                        parent_dir = resolve_path_full(pathcpy, 0);
-                        fname = lastslash+1;
-                    }
-                    if (parent_dir == -1) {
-                        shell_print_string("Invalid path: ");
-                        shell_print_string(filename);
-                        shell_print_string("\n");
-                    } else {
-                        int old_dir = current_dir;
-                        current_dir = parent_dir;
-                        int result = create_file(fname, content_start);
-                        current_dir = old_dir;
-                        if (result < 0) {
-                            shell_print_string("Filesystem is full!\n");
-                        }
-                    }
-                }
-            } else {
-                shell_print_string("Write format error: missing closing quote.\n");
-            }
-        } else {
-            shell_print_string("Usage: write <filename> \"content\"\n");
-        }
-        return;
-
     } else {
         shell_print_colored("Error: ", COLOR_ERROR, BLACK);
         shell_print_colored("Unknown command: ", COLOR_ERROR, BLACK);

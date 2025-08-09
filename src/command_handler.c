@@ -797,9 +797,9 @@ int process_command(char* cmd) {
         return 0;
     }
     
-    // Search for command in table
+    // Search for command in table - use exact match instead of partial match
     for (int i = 0; command_table[i].name != NULL; i++) {
-        if (my_strncmp(command, command_table[i].name, my_strlen(command_table[i].name)) == 0) {
+        if (strcmp(command, command_table[i].name) == 0) {
             command_table[i].handler(args);
             return 1; // Command found and executed
         }
