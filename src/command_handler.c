@@ -270,9 +270,9 @@ static const CommandEntry command_table[] = {
 };
 
 // Main command processor
-void process_command(char* cmd) {
+int process_command(char* cmd) {
     if (!cmd || *cmd == '\0') {
-        return;
+        return 0;
     }
     
     char* saveptr;
@@ -280,19 +280,17 @@ void process_command(char* cmd) {
     char* args = saveptr; // Remaining arguments
     
     if (!command) {
-        return;
+        return 0;
     }
     
     // Search for command in table
     for (int i = 0; command_table[i].name != NULL; i++) {
         if (my_strncmp(command, command_table[i].name, my_strlen(command_table[i].name)) == 0) {
             command_table[i].handler(args);
-            return;
+            return 1; // Command found and executed
         }
     }
     
     // Command not found
-    shell_print_colored("Unknown command: ", COLOR_ERROR, BLACK);
-    shell_print_colored(command, COLOR_WARNING, BLACK);
-    shell_print_string("\nType 'help' for available commands.\n");
+    return 0;
 }

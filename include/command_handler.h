@@ -11,6 +11,7 @@ typedef struct {
 } CommandEntry;
 
 // Main command processor function
-void process_command(char* cmd);
+// Returns 1 if command was handled, 0 if not found
+int process_command(char* cmd);
 
 #endif // COMMAND_HANDLER_H

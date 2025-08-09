@@ -73,7 +73,12 @@ void kernel_main() {
 }
 void process_cmd(char* cmd) {
     // Use the new improved command handler
-    process_command(cmd);
+    int handled = process_command(cmd);
+    
+    // If command was handled by new system, return
+    if (handled) {
+        return;
+    }
     
     // Keep legacy commands that haven't been migrated yet
     char* saveptr;
