@@ -1,9 +1,8 @@
 #include "shell.h"
 #include "display.h"
 #include "keyboard.h"
-#include "filesystem.h"
-#include "string_utils.h"
 #include "io.h"
+#include <string.h>
 
 void shutdown() {
     shell_print_colored("Shutting down SkyOS...\n", COLOR_INFO, BLACK);
@@ -47,98 +46,106 @@ void print_with_pagination(const char* text) {
 }
 
 void show_quick_help() {
-    shell_print_colored("\n=== SkyOS Quick Help ===\n", COLOR_INFO, BLACK);
-    shell_print_string("Basic Commands:\n");
-    shell_print_colored("  ls", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("        - List files and directories\n");
-    shell_print_colored("  cd <dir>", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("   - Change directory\n");
-    shell_print_colored("  mkdir <dir>", COLOR_EXECUTABLE, BLACK);
-    shell_print_string(" - Create directory\n");
-    shell_print_colored("  touch <file>", COLOR_EXECUTABLE, BLACK);
-    shell_print_string(" - Create file\n");
-    shell_print_colored("  cat <file>", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("  - Display file content\n");
-    shell_print_colored("  vim <file>", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("  - Edit file\n");
-    shell_print_colored("  clear", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("     - Clear screen\n");
-    shell_print_colored("  help", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("      - Show this help\n");
-    shell_print_colored("  shutdown", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("  - Shutdown system\n");
-    shell_print_string("\nType 'help <command>' for detailed help on a specific command.\n");
-    shell_print_string("Type 'help --full' for complete documentation.\n\n");
+    shell_print_colored("\n=== SkyOS v4.1 - Quick Reference ===\n", COLOR_INFO, BLACK);
+    shell_print_string(" Files & Directories:\n");
+    shell_print_string("  ls [-la]     - List files/directories\n");
+    shell_print_string("  cd <dir>     - Change directory\n");
+    shell_print_string("  pwd          - Current directory\n");
+    shell_print_string("  mkdir <dir>  - Create directory\n");
+    shell_print_string("  touch <file> - Create file\n");
+    shell_print_string("  cat <file>   - View file contents\n");
+    shell_print_string("  rm <file>    - Delete file\n");
+    shell_print_string("  write <file> <text> - Write to file\n\n");
+    shell_print_string("  System Commands:\n");
+    shell_print_string("  clear        - Clear screen\n");
+    shell_print_string("  sysinfo      - System information\n");
+    shell_print_string("  fastfetch    - Stylized system info\n");
+    shell_print_string("  color <f> <b> - Set colors (0-15)\n");
+    shell_print_string("  shutdown     - Shutdown system\n\n");
+    shell_print_string(" FAT32 Filesystem:\n");
+    shell_print_string("  fat32 init   - Initialize FAT32\n");
+    shell_print_string("  fat32 ls     - List FAT32 files\n\n");
+    shell_print_string(" Tips: Use Tab for completion, arrows for history\n");
+    shell_print_string(" For detailed help: help <command>\n");
+    shell_print_string("📚 For full documentation: help --full\n\n");
 }
 
 void show_full_help() {
     const char* help_text = 
-        "\n=== SkyOS Complete Documentation ===\n\n"
-        "BASIC COMMANDS:\n"
+        "\n=== SkyOS v4.1 - Complete Documentation ===\n\n"
+        "🔹 NAVIGATION & DIRECTORY COMMANDS:\n"
         "  ls [options]     - List directory contents\n"
-        "    -l             - Long format with details\n"
-        "    -a             - Show hidden files\n\n"
+        "    -l             - Long format with permissions, size, date\n"
+        "    -a             - Show all files including hidden (.files)\n"
+        "    -la            - Combine long format with all files\n"
         "  cd <directory>   - Change current directory\n"
         "    cd ..          - Go to parent directory\n"
         "    cd /           - Go to root directory\n"
-        "    cd ~           - Go to home directory\n\n"
-        "  pwd              - Print working directory\n\n"
-        "FILE OPERATIONS:\n"
-        "  touch <filename> - Create empty file\n"
-        "  cat <filename>   - Display file contents\n"
-        "  vim <filename>   - Edit file with text editor\n"
-        "  rm <filename>    - Remove file\n"
-        "  write <file> <content> - Write content to file\n\n"
-        "DIRECTORY OPERATIONS:\n"
-        "  mkdir <dirname>  - Create directory\n"
-        "  mkdir -p <path>  - Create directory path\n"
-        "  tree             - Show directory tree\n\n"
-        "SYSTEM COMMANDS:\n"
-        "  clear            - Clear screen\n"
-        "  sysinfo          - Show system information\n"
-        "  fastfetch        - Show system info with style\n"
-        "  shutdown         - Shutdown the system\n\n"
-        "FILESYSTEM:\n"
-        "  fat32 init       - Initialize FAT32 filesystem\n"
-        "  fat32 ls         - List FAT32 directory\n"
-        "  fat32 cat <file> - Read FAT32 file\n\n"
-        "CUSTOMIZATION:\n"
-        "  color <fg> <bg>  - Set text colors (0-15)\n"
-        "  chmod <file> <mode> - Change file permissions\n\n"
-        "HELP SYSTEM:\n"
-        "  help             - Show quick help\n"
-        "  help <command>   - Show help for specific command\n"
+        "    cd ~           - Go to home directory (if exists)\n"
+        "  pwd              - Print current working directory path\n\n"
+        "🔹 FILE OPERATIONS:\n"
+        "  touch <filename> - Create empty file or update timestamp\n"
+        "  cat <filename>   - Display file contents (with pagination)\n"
+        "  write <file> <content> - Write/overwrite content to file\n"
+        "  rm <filename>    - Remove file permanently (⚠️ irreversible)\n"
+        "  chmod <file> <mode> - Change file permissions (644, 755, 777)\n\n"
+        "🔹 DIRECTORY OPERATIONS:\n"
+        "  mkdir <dirname>  - Create new directory\n"
+        "  mkdir -p <path>  - Create nested directory structure\n\n"
+        "🔹 SYSTEM & INFORMATION:\n"
+        "  clear            - Clear terminal screen\n"
+        "  sysinfo          - Show detailed system information\n"
+        "  fastfetch        - Show stylized system info with ASCII art\n"
+        "  debug            - Display debug info & filesystem stats\n"
+        "  shutdown         - Safely shutdown the system\n\n"
+        "🔹 FAT32 FILESYSTEM:\n"
+        "  fat32 init       - Initialize FAT32 filesystem on disk\n"
+        "  fat32 info       - Show FAT32 filesystem information\n"
+        "  fat32 switch     - Switch between in-memory and FAT32 FS\n"
+        "  fat32 ls         - List FAT32 directory contents\n"
+        "  fat32 cat <file> - Read file from FAT32 filesystem\n\n"
+        "🔹 CUSTOMIZATION & SETTINGS:\n"
+        "  color <fg> <bg>  - Set text colors (0-15 color codes)\n"
+        "    Examples: color 15 0 (white/black), color 10 0 (green/black)\n\n"
+        "🔹 DEVELOPMENT TOOLS:\n"
+        "  run <file.c>     - Simple C code interpreter (prints printf output)\n\n"
+        "🔹 HELP SYSTEM:\n"
+        "  help             - Show quick command reference\n"
+        "  help <command>   - Show detailed help for specific command\n"
         "  help --full      - Show this complete documentation\n\n"
-        "EDITOR COMMANDS (vim):\n"
-        "  i                - Enter insert mode\n"
-        "  ESC              - Return to normal mode\n"
-        "  :w               - Save file\n"
-        "  :q               - Quit editor\n"
-        "  :wq              - Save and quit\n"
-        "  h,j,k,l          - Move cursor (left,down,up,right)\n"
-        "  x                - Delete character\n"
-        "  o                - Open new line below\n"
-        "  O                - Open new line above\n\n"
-        "NAVIGATION:\n"
-        "  Arrow keys       - Navigate in editor and command history\n"
-        "  Tab              - Auto-complete commands and filenames\n"
-        "  Ctrl+C           - Cancel current operation\n\n"
-        "For more information, visit: https://github.com/shamns23/skyos\n\n";
+        "🔹 ADVANCED FEATURES:\n"
+        "  • Tab completion for commands and filenames\n"
+        "  • Command history navigation with arrow keys\n"
+        "  • Color-coded file types (blue=dirs, white=files, green=executables)\n"
+        "  • Dual filesystem support (in-memory + FAT32)\n"
+        "  • File permissions system (read/write/execute)\n"
+        "  • Pagination for long outputs\n\n"
+        "🔹 TIPS & SHORTCUTS:\n"
+        "  • Use Tab for auto-completion\n"
+        "  • Arrow keys for command history\n"
+        "  • Type partial command + Tab to see suggestions\n"
+        "  • Use 'help <command>' for detailed command info\n\n"
+        "🔹 COLOR CODES REFERENCE:\n"
+        "  0=Black  1=Blue  2=Green  3=Cyan  4=Red  5=Magenta\n"
+        "  6=Brown  7=LightGray  8=DarkGray  9=LightBlue\n"
+        "  10=LightGreen  11=LightCyan  12=LightRed  13=LightMagenta\n"
+        "  14=Yellow  15=White\n\n"
+        "📧 For support: https://github.com/shamns23/skyos\n"
+        "🌟 SkyOS - Simple, Fast, Educational Operating System\n\n";
     
     print_with_pagination(help_text);
 }
 
+// Command help router function
 void show_command_help(const char* command) {
     if (strcmp(command, "ls") == 0) show_ls_help();
     else if (strcmp(command, "cd") == 0) show_cd_help();
     else if (strcmp(command, "mkdir") == 0) show_mkdir_help();
     else if (strcmp(command, "touch") == 0) show_touch_help();
     else if (strcmp(command, "cat") == 0) show_cat_help();
-    else if (strcmp(command, "vim") == 0) show_vim_help();
     else if (strcmp(command, "fat32") == 0) show_fat32_help();
     else if (strcmp(command, "color") == 0) show_color_help();
     else if (strcmp(command, "debug") == 0) show_debug_help();
-    else if (strcmp(command, "tree") == 0) show_tree_help();
     else if (strcmp(command, "write") == 0) show_write_help();
     else if (strcmp(command, "rm") == 0) show_rm_help();
     else if (strcmp(command, "chmod") == 0) show_chmod_help();
@@ -148,151 +155,183 @@ void show_command_help(const char* command) {
     else if (strcmp(command, "shutdown") == 0) show_shutdown_help();
     else if (strcmp(command, "clear") == 0) show_clear_help();
     else {
-        shell_print_colored("Unknown command: ", COLOR_ERROR, BLACK);
-        shell_print_string(command);
-        shell_print_string("\nType 'help' for available commands.\n");
-    }
-}
-
-void print_tree(int dir_index, int depth) {
-    for (int i = 0; i < fs_entry_count; i++) {
-        if (filesystem[i].parent_dir == dir_index) {
-            // Print indentation
-            for (int j = 0; j < depth; j++) {
-                shell_print_string("  ");
-            }
-            shell_print_string("|-- ");
-            print_entry_colored(&filesystem[i]);
-            shell_print_string("\n");
-            
-            // Recursively print subdirectories
-            if (filesystem[i].type == TYPE_DIR) {
-                print_tree(i, depth + 1);
-            }
-        }
+        shell_print_colored("\n❌ Unknown command: ", COLOR_ERROR, BLACK);
+        shell_print_colored(command, COLOR_WARNING, BLACK);
+        shell_print_string("\n\n💡 Available commands:\n");
+        shell_print_string("  ls, cd, pwd, mkdir, touch, cat, rm, chmod\n");
+        shell_print_string("  write, clear, sysinfo, fastfetch, color\n");
+        shell_print_string("  fat32, debug, shutdown\n\n");
+        shell_print_string("Use 'help' for quick reference or 'help --full' for complete documentation.\n\n");
     }
 }
 
 // Individual help functions
 void show_ls_help() {
-    shell_print_colored("\n=== ls - List Directory Contents ===\n", COLOR_INFO, BLACK);
-    shell_print_string("Usage: ls [options]\n\n");
-    shell_print_string("Options:\n");
-    shell_print_string("  -l    Long format (show details)\n");
-    shell_print_string("  -a    Show all files (including hidden)\n\n");
-    shell_print_string("Examples:\n");
-    shell_print_string("  ls        List files in current directory\n");
-    shell_print_string("  ls -l     List files with details\n");
-    shell_print_string("  ls -a     List all files including hidden\n");
-    shell_print_string("  ls -la    List all files with details\n\n");
-    shell_print_string("Colors:\n");
-    shell_print_colored("  Blue", COLOR_DIR, BLACK);
-    shell_print_string("      - Directories\n");
-    shell_print_colored("  White", COLOR_FILE, BLACK);
-    shell_print_string("     - Regular files\n");
-    shell_print_colored("  Green", COLOR_EXECUTABLE, BLACK);
-    shell_print_string("     - Executable files\n\n");
+    shell_print_colored("\n=== 📁 ls - List Directory Contents ===\n", COLOR_INFO, BLACK);
+    shell_print_string("Usage: ls [options] [directory]\n\n");
+    shell_print_string("🔧 Options:\n");
+    shell_print_string("  -l    Long format (permissions, size, date, name)\n");
+    shell_print_string("  -a    Show all files (including hidden .files)\n");
+    shell_print_string("  -la   Combine long format with all files\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  ls           - List current directory\n");
+    shell_print_string("  ls -l        - Detailed listing with permissions\n");
+    shell_print_string("  ls -a        - Show hidden files too\n");
+    shell_print_string("  ls -la       - Detailed list including hidden files\n");
+    shell_print_string("  ls /home     - List specific directory\n");
+    shell_print_string("  ls ..        - List parent directory\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Lists files and directories with color coding:\n");
+    shell_print_string("  🔵 Blue = Directories\n");
+    shell_print_string("  ⚪ White = Regular files\n");
+    shell_print_string("  🟢 Green = Executable files\n\n");
+    shell_print_string("💡 Tip: Use Tab completion for directory names\n\n");
 }
 
 void show_cd_help() {
-    shell_print_colored("\n=== cd - Change Directory ===\n", COLOR_INFO, BLACK);
-    shell_print_string("Usage: cd <directory>\n\n");
-    shell_print_string("Special directories:\n");
-    shell_print_string("  .         Current directory\n");
-    shell_print_string("  ..        Parent directory\n");
-    shell_print_string("  /         Root directory\n");
-    shell_print_string("  ~         Home directory\n\n");
-    shell_print_string("Examples:\n");
-    shell_print_string("  cd home       Change to 'home' directory\n");
-    shell_print_string("  cd ..         Go to parent directory\n");
-    shell_print_string("  cd /          Go to root directory\n");
-    shell_print_string("  cd /home/user Go to absolute path\n\n");
+    shell_print_colored("\n=== 📂 cd - Change Directory ===\n", COLOR_INFO, BLACK);
+    shell_print_string("Usage: cd [directory]\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  cd /home     - Change to /home directory\n");
+    shell_print_string("  cd ..        - Go to parent directory\n");
+    shell_print_string("  cd /         - Go to root directory\n");
+    shell_print_string("  cd ~         - Go to home directory (if exists)\n");
+    shell_print_string("  cd           - Go to home directory\n");
+    shell_print_string("  cd Documents - Change to Documents folder\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Changes the current working directory to the specified path.\n");
+    shell_print_string("Without arguments, attempts to change to home directory.\n\n");
+    shell_print_string("🔧 Path Types:\n");
+    shell_print_string("  Absolute: /home/user (starts with /)\n");
+    shell_print_string("  Relative: Documents (relative to current dir)\n");
+    shell_print_string("  Special:  .. (parent), . (current), ~ (home)\n\n");
+    shell_print_string("💡 Tips:\n");
+    shell_print_string("  • Use Tab completion for directory names\n");
+    shell_print_string("  • Use 'pwd' to see current directory\n");
+    shell_print_string("  • Use 'ls' to see available directories\n\n");
 }
 
 void show_mkdir_help() {
-    shell_print_colored("\n=== mkdir - Create Directory ===\n", COLOR_INFO, BLACK);
+    shell_print_colored("\n=== 📁 mkdir - Create Directory ===\n", COLOR_INFO, BLACK);
     shell_print_string("Usage: mkdir [options] <directory>\n\n");
-    shell_print_string("Options:\n");
-    shell_print_string("  -p    Create parent directories as needed\n\n");
-    shell_print_string("Examples:\n");
-    shell_print_string("  mkdir docs        Create 'docs' directory\n");
-    shell_print_string("  mkdir -p a/b/c    Create nested directories\n\n");
-    shell_print_string("Note: Directory names cannot contain spaces or special characters.\n\n");
+    shell_print_string("🔧 Options:\n");
+    shell_print_string("  -p    Create parent directories as needed (recursive)\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  mkdir test       - Create 'test' directory\n");
+    shell_print_string("  mkdir -p a/b/c   - Create nested directory structure\n");
+    shell_print_string("  mkdir docs temp  - Create multiple directories\n");
+    shell_print_string("  mkdir /home/new  - Create directory with absolute path\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Creates new directories in the current filesystem.\n");
+    shell_print_string("Without -p option, parent directories must already exist.\n");
+    shell_print_string("With -p option, creates entire directory path if needed.\n\n");
+    shell_print_string("⚠️  Notes:\n");
+    shell_print_string("  • Directory names cannot contain special characters\n");
+    shell_print_string("  • Cannot create directory if name already exists\n");
+    shell_print_string("  • Use 'ls' to verify directory was created\n\n");
+    shell_print_string("💡 Tip: Use Tab completion for existing path parts\n\n");
 }
 
 void show_touch_help() {
-    shell_print_colored("\n=== touch - Create File ===\n", COLOR_INFO, BLACK);
+    shell_print_colored("\n=== 📄 touch - Create File ===\n", COLOR_INFO, BLACK);
     shell_print_string("Usage: touch <filename>\n\n");
-    shell_print_string("Description:\n");
-    shell_print_string("  Creates an empty file with the specified name.\n");
-    shell_print_string("  If the file already exists, it will not be modified.\n\n");
-    shell_print_string("Examples:\n");
-    shell_print_string("  touch readme.txt    Create empty file\n");
-    shell_print_string("  touch config.cfg    Create configuration file\n\n");
-    shell_print_string("Note: Filenames cannot contain spaces or special characters.\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  touch file.txt   - Create empty text file\n");
+    shell_print_string("  touch test.c     - Create C source file\n");
+    shell_print_string("  touch readme     - Create file without extension\n");
+    shell_print_string("  touch /tmp/log   - Create file with absolute path\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Creates an empty file if it doesn't exist.\n");
+    shell_print_string("If file already exists, updates its timestamp.\n");
+    shell_print_string("File is created with default permissions (644).\n\n");
+    shell_print_string("⚠️  Notes:\n");
+    shell_print_string("  • Filename cannot contain special characters\n");
+    shell_print_string("  • Parent directory must exist\n");
+    shell_print_string("  • Use 'ls -l' to verify file creation\n\n");
+    shell_print_string("💡 Tips:\n");
+    shell_print_string("  • Use 'write' command to add content to file\n");
+    shell_print_string("  • Use 'cat' command to view file contents\n");
+    shell_print_string("  • Use Tab completion for directory paths\n\n");
 }
 
 void show_cat_help() {
-    shell_print_colored("\n=== cat - Display File Contents ===\n", COLOR_INFO, BLACK);
+    shell_print_colored("\n=== 📖 cat - Display File Contents ===\n", COLOR_INFO, BLACK);
     shell_print_string("Usage: cat <filename>\n\n");
-    shell_print_string("Description:\n");
-    shell_print_string("  Displays the entire contents of a text file.\n");
-    shell_print_string("  For large files, content will be paginated.\n\n");
-    shell_print_string("Examples:\n");
-    shell_print_string("  cat readme.txt      Display file contents\n");
-    shell_print_string("  cat /etc/config     Display system config\n\n");
-    shell_print_string("Note: Binary files may display garbled text.\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  cat readme.txt   - Display text file contents\n");
+    shell_print_string("  cat config.cfg   - View configuration file\n");
+    shell_print_string("  cat /etc/hosts   - Display system file\n");
+    shell_print_string("  cat script.sh    - View shell script\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Displays the complete contents of a text file.\n");
+    shell_print_string("For large files, output is automatically paginated.\n");
+    shell_print_string("Works with both in-memory and FAT32 filesystems.\n\n");
+    shell_print_string("⚠️  Notes:\n");
+    shell_print_string("  • File must exist and be readable\n");
+    shell_print_string("  • Binary files may display garbled text\n");
+    shell_print_string("  • Large files are shown page by page\n\n");
+    shell_print_string("💡 Tips:\n");
+    shell_print_string("  • Use 'ls' to see available files first\n");
+    shell_print_string("  • Use Tab completion for filenames\n");
+    shell_print_string("  • Press any key to continue pagination\n\n");
 }
 
-void show_vim_help() {
-    shell_print_colored("\n=== vim - Text Editor ===\n", COLOR_INFO, BLACK);
-    shell_print_string("Usage: vim <filename>\n\n");
-    shell_print_string("Modes:\n");
-    shell_print_string("  Normal Mode  - Navigate and execute commands\n");
-    shell_print_string("  Insert Mode  - Type and edit text\n\n");
-    shell_print_string("Normal Mode Commands:\n");
-    shell_print_string("  i            Enter insert mode\n");
-    shell_print_string("  h,j,k,l      Move cursor (left,down,up,right)\n");
-    shell_print_string("  x            Delete character under cursor\n");
-    shell_print_string("  o            Open new line below\n");
-    shell_print_string("  O            Open new line above\n");
-    shell_print_string("  :w           Save file\n");
-    shell_print_string("  :q           Quit editor\n");
-    shell_print_string("  :wq          Save and quit\n\n");
-    shell_print_string("Insert Mode:\n");
-    shell_print_string("  ESC          Return to normal mode\n");
-    shell_print_string("  Arrow keys   Move cursor\n");
-    shell_print_string("  Backspace    Delete previous character\n\n");
-}
+
 
 void show_fat32_help() {
-    shell_print_colored("\n=== fat32 - FAT32 Filesystem ===\n", COLOR_INFO, BLACK);
-    shell_print_string("Usage: fat32 <command> [arguments]\n\n");
-    shell_print_string("Commands:\n");
-    shell_print_string("  init         Initialize FAT32 filesystem\n");
-    shell_print_string("  ls           List FAT32 directory contents\n");
-    shell_print_string("  cat <file>   Display FAT32 file contents\n");
-    shell_print_string("  cd <dir>     Change FAT32 directory\n\n");
-    shell_print_string("Examples:\n");
-    shell_print_string("  fat32 init       Initialize filesystem\n");
-    shell_print_string("  fat32 ls         List files\n");
-    shell_print_string("  fat32 cat boot.cfg  Read file\n\n");
-    shell_print_string("Note: FAT32 commands operate on the disk filesystem,\n");
-    shell_print_string("      separate from the in-memory filesystem.\n\n");
+    shell_print_colored("\n=== 💾 fat32 - FAT32 Filesystem Manager ===\n", COLOR_INFO, BLACK);
+    shell_print_string("Usage: fat32 <subcommand> [arguments]\n\n");
+    shell_print_string("🔧 Subcommands:\n");
+    shell_print_string("  init         - Initialize FAT32 filesystem on disk\n");
+    shell_print_string("  info         - Show detailed filesystem information\n");
+    shell_print_string("  switch       - Toggle between in-memory and FAT32 FS\n");
+    shell_print_string("  ls           - List directory contents (FAT32 mode)\n");
+    shell_print_string("  cat <file>   - Display file contents from FAT32\n");
+    shell_print_string("  cd <dir>     - Change FAT32 directory\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  fat32 init       - Initialize FAT32 on primary disk\n");
+    shell_print_string("  fat32 info       - Show disk size, clusters, etc.\n");
+    shell_print_string("  fat32 switch     - Switch filesystem mode\n");
+    shell_print_string("  fat32 ls         - List files in FAT32 filesystem\n");
+    shell_print_string("  fat32 cat readme - Read file from FAT32 disk\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Manages FAT32 filesystem operations and disk access.\n");
+    shell_print_string("Provides dual filesystem support: in-memory + FAT32.\n");
+    shell_print_string("Allows persistent storage on actual disk hardware.\n\n");
+    shell_print_string("⚠️  Notes:\n");
+    shell_print_string("  • FAT32 init formats the disk (destructive)\n");
+    shell_print_string("  • Switch command toggles active filesystem\n");
+    shell_print_string("  • FAT32 operations work only in FAT32 mode\n\n");
+    shell_print_string("💡 Tips:\n");
+    shell_print_string("  • Use 'fat32 info' to check current mode\n");
+    shell_print_string("  • Initialize FAT32 before first use\n");
+    shell_print_string("  • Regular ls/cat work in current mode\n\n");
 }
 
 void show_color_help() {
-    shell_print_colored("\n=== color - Set Text Colors ===\n", COLOR_INFO, BLACK);
+    shell_print_colored("\n=== 🎨 color - Set Terminal Colors ===\n", COLOR_INFO, BLACK);
     shell_print_string("Usage: color <foreground> <background>\n\n");
-    shell_print_string("Color codes (0-15):\n");
-    shell_print_string("  0=Black    1=Blue     2=Green    3=Cyan\n");
-    shell_print_string("  4=Red      5=Magenta  6=Brown    7=Light Gray\n");
-    shell_print_string("  8=Dark Gray 9=Light Blue 10=Light Green 11=Light Cyan\n");
-    shell_print_string("  12=Light Red 13=Light Magenta 14=Yellow 15=White\n\n");
-    shell_print_string("Examples:\n");
-    shell_print_string("  color 15 0    White text on black background\n");
-    shell_print_string("  color 10 0    Green text on black background\n");
-    shell_print_string("  color 14 4    Yellow text on red background\n\n");
+    shell_print_string("🌈 Color Codes (0-15):\n");
+    shell_print_string("  0=Black      1=Blue       2=Green      3=Cyan\n");
+    shell_print_string("  4=Red        5=Magenta    6=Brown      7=LightGray\n");
+    shell_print_string("  8=DarkGray   9=LightBlue  10=LightGreen 11=LightCyan\n");
+    shell_print_string("  12=LightRed  13=LightMagenta 14=Yellow  15=White\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  color 15 0   - White text on black background (default)\n");
+    shell_print_string("  color 10 0   - Green text on black background\n");
+    shell_print_string("  color 14 4   - Yellow text on red background\n");
+    shell_print_string("  color 11 1   - Light cyan text on blue background\n");
+    shell_print_string("  color 0 15   - Black text on white background\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Changes the terminal text and background colors globally.\n");
+    shell_print_string("Colors persist until changed again or system restart.\n");
+    shell_print_string("Affects all subsequent text output in the terminal.\n\n");
+    shell_print_string("💡 Popular Combinations:\n");
+    shell_print_string("  • color 10 0  - Matrix style (green on black)\n");
+    shell_print_string("  • color 14 0  - Warning style (yellow on black)\n");
+    shell_print_string("  • color 12 0  - Error style (red on black)\n");
+    shell_print_string("  • color 11 0  - Info style (cyan on black)\n\n");
+    shell_print_string("⚠️  Note: Invalid color codes will be ignored\n\n");
 }
 
 void show_debug_help() {
@@ -307,19 +346,7 @@ void show_debug_help() {
     shell_print_string("understanding system internals.\n\n");
 }
 
-void show_tree_help() {
-    shell_print_colored("\n=== tree - Directory Tree ===\n", COLOR_INFO, BLACK);
-    shell_print_string("Usage: tree\n\n");
-    shell_print_string("Description:\n");
-    shell_print_string("  Displays the directory structure in a tree format,\n");
-    shell_print_string("  showing the hierarchical relationship between\n");
-    shell_print_string("  directories and files.\n\n");
-    shell_print_string("Example output:\n");
-    shell_print_string("  /\n");
-    shell_print_string("  |-- home/\n");
-    shell_print_string("  |-- bin/\n");
-    shell_print_string("  |-- readme.txt\n\n");
-}
+
 
 void show_write_help() {
     shell_print_colored("\n=== write - Write to File ===\n", COLOR_INFO, BLACK);

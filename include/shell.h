@@ -7,7 +7,7 @@ void print_with_pagination(const char* text);
 void show_quick_help();
 void show_full_help();
 void show_command_help(const char* command);
-void print_tree(int dir_index, int depth);
+
 
 // Individual help functions
 void show_ls_help();
@@ -15,11 +15,11 @@ void show_cd_help();
 void show_mkdir_help();
 void show_touch_help();
 void show_cat_help();
-void show_vim_help();
+
 void show_fat32_help();
 void show_color_help();
 void show_debug_help();
-void show_tree_help();
+
 void show_write_help();
 void show_rm_help();
 void show_chmod_help();

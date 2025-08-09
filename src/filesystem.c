@@ -172,11 +172,10 @@ int resolve_path_full(const char* path, int want_file) {
             char* next_token = strtok_r(NULL, "/", &saveptr);
             if (next_token == NULL) {
                 // This is the last component
-                if (want_file || filesystem[found].type == TYPE_FILE) {
-                    return found;
-                } else if (filesystem[found].type == TYPE_DIR) {
-                    return found;
+                if (want_file && filesystem[found].type != TYPE_FILE) {
+                    return -1; // Want file but found directory
                 }
+                return found;
             } else {
                 // More components to process
                 if (filesystem[found].type != TYPE_DIR) {
