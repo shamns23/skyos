@@ -7,6 +7,18 @@ int cursor_y = 0;
 int current_fg_color = WHITE;
 int current_bg_color = BLACK;
 
+void enable_cursor(unsigned char cursor_start, unsigned char cursor_end) {
+    outb(0x3D4, 0x0A);
+    outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
+    outb(0x3D4, 0x0B);
+    outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end);
+}
+
+void disable_cursor() {
+    outb(0x3D4, 0x0A);
+    outb(0x3D5, 0x20);
+}
+
 void update_cursor(int x, int y) {
     unsigned short pos = y * VGA_WIDTH + x;
     outb(0x3D4, 0x0F);
