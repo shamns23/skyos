@@ -425,11 +425,11 @@ void show_shutdown_help() {
 }
 
 void show_clear_help() {
-    shell_print_colored("\n=== clear - Clear Screen ===\n", COLOR_INFO, BLACK);
+    shell_print_colored("\n=== 🧹 clear - Clear Screen ===\n", COLOR_INFO, BLACK);
     shell_print_string("Usage: clear\n\n");
-    shell_print_string("Description:\n");
-    shell_print_string("  Clears the terminal screen and moves the\n");
-    shell_print_string("  cursor to the top-left corner.\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Clears the terminal screen and moves cursor to top-left.\n\n");
+    shell_print_string("💡 Tip: Useful for cleaning up cluttered terminal output.\n\n");
 }
 
 void show_memory_help() {
