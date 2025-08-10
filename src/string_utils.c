@@ -96,3 +96,42 @@ char* strtok_r(char* str, const char* delim, char** saveptr) {
     *saveptr = str;
     return token;
 }
+
+char* itoa(int value, char* str) {
+    if (value == 0) {
+        str[0] = '0';
+        str[1] = '\0';
+        return str;
+    }
+    
+    int is_negative = 0;
+    if (value < 0) {
+        is_negative = 1;
+        value = -value;
+    }
+    
+    int i = 0;
+    while (value != 0) {
+        str[i++] = '0' + (value % 10);
+        value /= 10;
+    }
+    
+    if (is_negative) {
+        str[i++] = '-';
+    }
+    
+    str[i] = '\0';
+    
+    // Reverse the string
+    int start = 0;
+    int end = i - 1;
+    while (start < end) {
+        char temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        start++;
+        end--;
+    }
+    
+    return str;
+}
