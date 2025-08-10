@@ -1,4 +1,10 @@
 /*
+                            ________    _________ 
+   ____  __________________ \_____  \  /   _____/ 
+  /  _ \/  ___/\___   /  _ \ /   |   \ \_____  \  
+ (  <_> )___ \  /    (  <_> )    |    \/        \ 
+  \____/____  >/_____ \____/\_______  /_______  / 
+            \/       \/             \/        \/
  * Keyboard driver for oszoOS
  * Converted from Linux keyboard.S to C implementation
  * Compatible with oszoOS system architecture
@@ -6,7 +12,7 @@
 
 #include "keyboard.h"
 #include "io.h"
-#include "display.h"
+
 
 // Global keyboard state variables
 unsigned char kbd_flags = 0;
@@ -16,24 +22,19 @@ unsigned char e1_prefix = 0;
 
 // US keyboard layout (normal)
 unsigned char kbd_us[128] = {
-    0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
-    '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
-    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
-    0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,
-    '*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
-// US keyboard layout (shift)
-unsigned char kbd_us_shift[128] = {
-    0,  27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b',
-    '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',
-    0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',
-    0, '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0,
-    '*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    // 0x00-0x0F: Special keys and numbers
+    0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b', '\t',
+    // 0x10-0x1F: QWERTY row
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0, 'a', 's',
+    // 0x20-0x2F: ASDF row
+    'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\', 'z', 'x', 'c', 'v',
+    // 0x30-0x3F: ZXCV row, modifiers, and space
+    'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0,
+    // 0x40-0x4F: F-keys and numeric keypad
+    0, 0, 0, 0, 0, 0, 0, '7', '8', '9', '-', '4', '5', '6', '+', '1',
+    // 0x50-0x5F: Numeric keypad and F-keys
+    '2', '3', '0', '.', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    // 0x60-0x7F: Unused
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
@@ -43,6 +44,25 @@ unsigned char num_table[13] = "789 456 1230,";
 
 // Cursor keys layout
 unsigned char cur_table[13] = "HA5 DGC YB623";
+
+// US keyboard layout (shift)
+unsigned char kbd_us_shift[128] = {
+    // 0x00-0x0F: Special keys and symbols
+    0, 27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b', '\t',
+    // 0x10-0x1F: QWERTY row (shifted)
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0, 'A', 'S',
+    // 0x20-0x2F: ASDF row (shifted)
+    'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', 0, '|', 'Z', 'X', 'C', 'V',
+    // 0x30-0x3F: ZXCV row (shifted), modifiers, and space
+    'B', 'N', 'M', '<', '>', '?', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0,
+    // 0x40-0x4F: F-keys and numeric keypad (same as non-shifted)
+    0, 0, 0, 0, 0, 0, 0, '7', '8', '9', '-', '4', '5', '6', '+', '1',
+    // 0x50-0x5F: Numeric keypad and F-keys (same as non-shifted)
+    '2', '3', '0', '.', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    // 0x60-0x7F: Unused
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
 
 // Wait for keyboard controller to be ready
 void kbd_wait(void) {
@@ -119,7 +139,7 @@ void handle_modifier_key(unsigned char scancode, unsigned char pressed) {
 }
 
 // Handle cursor/numeric keypad
-char handle_cursor_keys(unsigned char scancode) {
+int handle_cursor_keys(unsigned char scancode) {
     unsigned char key_index = scancode - 0x47;
     
     if (key_index > 12) return 0;
@@ -174,7 +194,7 @@ void init_keyboard(void) {
 }
 
 // Get character from keyboard
-char get_char(void) {
+int get_char(void) {
     unsigned char scancode;
     unsigned char pressed;
     char ch;

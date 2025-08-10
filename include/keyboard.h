@@ -101,7 +101,7 @@ void kbd_wait(void);
 void kb_wait(void);
 void set_leds(void);
 void init_keyboard(void);
-char get_char(void);
+int get_char(void);
 void keyboard_interrupt(void);
 
 #endif // KEYBOARD_H
