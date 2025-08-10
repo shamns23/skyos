@@ -696,7 +696,7 @@ void display_detailed_sysinfo() {
     shell_print_colored("===============================================================================\n", LIGHT_CYAN, BLACK);
     
     // System Overview
-    shell_print_colored("🖥️  SYSTEM OVERVIEW\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("SYSTEM OVERVIEW\n", LIGHT_CYAN, BLACK);
     shell_print_colored("   Hostname: ", LIGHT_GREEN, BLACK);
     shell_print_string(info.hostname);
     shell_print_char('\n');
@@ -763,7 +763,7 @@ void display_detailed_sysinfo() {
     shell_print_char('\n');
     
     // Memory Information
-    shell_print_colored("💾 MEMORY INFORMATION\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("MEMORY INFORMATION\n", LIGHT_CYAN, BLACK);
     shell_print_colored("   Total RAM: ", LIGHT_GREEN, BLACK);
     format_memory_size(info.memory.total_ram, buffer);
     shell_print_string(buffer);
@@ -801,7 +801,7 @@ void display_detailed_sysinfo() {
     shell_print_char('\n');
     
     // GPU Information
-    shell_print_colored("🎮 GPU INFORMATION\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("GPU INFORMATION\n", LIGHT_CYAN, BLACK);
     shell_print_colored("   Model: ", LIGHT_GREEN, BLACK);
     shell_print_string(info.gpu.model);
     shell_print_char('\n');
@@ -875,7 +875,7 @@ void display_detailed_sysinfo() {
     shell_print_char('\n');
     
     // Battery Information
-    shell_print_colored("🔋 BATTERY INFORMATION\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("BATTERY INFORMATION\n", LIGHT_CYAN, BLACK);
     shell_print_colored("   Model: ", LIGHT_GREEN, BLACK);
     shell_print_string(info.battery.vendor);
     shell_print_string(" ");
@@ -903,7 +903,7 @@ void display_detailed_sysinfo() {
     shell_print_char('\n');
     
     // Thermal Information
-    shell_print_colored("🌡️  THERMAL INFORMATION\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("THERMAL INFORMATION\n", LIGHT_CYAN, BLACK);
     shell_print_colored("   CPU Temp: ", LIGHT_GREEN, BLACK);
     itoa(info.thermal.cpu_temp, buffer);
     shell_print_string(buffer);
