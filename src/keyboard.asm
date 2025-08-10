@@ -1,5 +1,5 @@
-; oszoOS Keyboard Driver - Assembly Implementation
-; This file replaces keyboard.c with pure assembly
+; oszoOS Keyboard Driver - Enhanced Linux 0.11 Style Implementation
+; Based on Linux 0.11 keyboard.S with modern adaptations
 
 [BITS 32]
 [GLOBAL kbd_wait]
@@ -14,13 +14,19 @@ KBD_DATA_PORT equ 0x60
 KBD_STATUS_PORT equ 0x64
 KBD_COMMAND_PORT equ 0x64
 
-; Key flags
-KEY_SHIFT equ 0x01
-KEY_CTRL equ 0x02
-KEY_ALT equ 0x04
-KEY_CAPS equ 0x08
-KEY_NUM_LOCK equ 0x10
-KEY_SCROLL_LOCK equ 0x20
+; Key flags (Linux style)
+KEY_LSHIFT equ 0x01
+KEY_RSHIFT equ 0x02
+KEY_CTRL equ 0x04
+KEY_ALT equ 0x08
+KEY_CAPS equ 0x10
+KEY_NUM equ 0x20
+KEY_SCROLL equ 0x40
+
+; LED flags
+LED_NUM equ 0x02
+LED_CAPS equ 0x04
+LED_SCROLL equ 0x01
 
 ; Special key scancodes
 KEY_ARROW_UP equ 0x48
@@ -87,14 +93,14 @@ KEY_SCROLL_LOCK_PRESS equ 0x46
 ; Data section
 SECTION .data
 
-; Keyboard state variables
-extended_key db 0
-key_released db 0
-kbd_flags db 0
+; Keyboard state variables (Linux style)
+extended_key db 0        ; Extended key flag (0xE0 prefix)
+e1_prefix db 0         ; E1 prefix flag
+kbd_flags db 0         ; Current modifier state
+kbd_leds db 2          ; LED state (num-lock on by default)
 
-; Keyboard layout tables - Corrected PS/2 Set 1 mapping
-; Standard PC keyboard scancode mapping (Set 1)
-; Scancodes 0x00-0x7F mapped to ASCII characters
+; Enhanced keyboard layout tables - Linux 0.11 style
+; US keyboard layout with proper scan code mapping
 kbd_us:
     db 0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 8      ; 0x00-0x0E
     db 9, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 10         ; 0x0F-0x1C
@@ -117,9 +123,17 @@ kbd_us_shift:
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                           ; 0x69-0x78
     db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0                           ; 0x79-0x7F
 
+; Numeric keypad table (when num-lock is on)
+num_table:
+    db '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0', '.'          ; 0x47-0x53
+
+; Cursor key table (when num-lock is off or shift is pressed)
+cur_table:
+    db 'H', '8', '9', 'A', '4', '5', '6', 'B', '1', '2', '3', 'C', 'D'          ; 0x47-0x53
+
 SECTION .text
 
-; Function: kbd_wait - Wait for keyboard controller ready
+; Function: kbd_wait - Wait for keyboard controller ready (Linux style)
 kbd_wait:
     push eax
 .kbd_wait_loop:
@@ -129,23 +143,56 @@ kbd_wait:
     pop eax
     ret
 
-; Function: init_keyboard - Initialize keyboard controller
+; Function: kb_wait - Wait for keyboard ACK (Linux style)
+kb_wait:
+    push eax
+.kb_wait_loop:
+    in al, KBD_STATUS_PORT
+    test al, 0x01
+    jz .kb_wait_loop
+    in al, KBD_DATA_PORT
+    cmp al, 0xFA
+    jne .kb_wait_loop
+    pop eax
+    ret
+
+; Function: set_leds - Set keyboard LEDs (Linux style)
+set_leds:
+    push eax
+    push ebx
+    
+    call kbd_wait
+    mov al, 0xED        ; Set LEDs command
+    out KBD_DATA_PORT, al
+    
+    call kb_wait
+    mov al, [kbd_leds]
+    out KBD_DATA_PORT, al
+    
+    pop ebx
+    pop eax
+    ret
+
+; Function: init_keyboard - Initialize keyboard controller (Linux style)
 init_keyboard:
     push eax
     
+    ; Enable keyboard
     call kbd_wait
     mov al, 0xAE
     out KBD_COMMAND_PORT, al
     
+    ; Get current controller configuration
     call kbd_wait
     mov al, 0x20
     out KBD_COMMAND_PORT, al
     
     call kbd_wait
     in al, KBD_DATA_PORT
-    or al, 1
+    or al, 1            ; Enable keyboard interrupt
     push eax
     
+    ; Set configuration
     call kbd_wait
     mov al, 0x60
     out KBD_COMMAND_PORT, al
@@ -154,11 +201,82 @@ init_keyboard:
     pop eax
     out KBD_DATA_PORT, al
     
+    ; Set LEDs to default (num-lock on)
+    mov byte [kbd_leds], LED_NUM
+    call set_leds
+    
     call kbd_wait
     pop eax
     ret
 
-; Function: get_char - Get character from keyboard
+; Function: handle_modifier - Handle modifier keys
+handle_modifier:
+    push eax
+    cmp al, KEY_LSHIFT_PRESS
+    je .set_lshift
+    cmp al, KEY_LSHIFT_RELEASE
+    je .unset_lshift
+    cmp al, KEY_RSHIFT_PRESS
+    je .set_rshift
+    cmp al, KEY_RSHIFT_RELEASE
+    je .unset_rshift
+    cmp al, KEY_CTRL_PRESS
+    je .set_ctrl
+    cmp al, KEY_CTRL_RELEASE
+    je .unset_ctrl
+    cmp al, KEY_ALT_PRESS
+    je .set_alt
+    cmp al, KEY_ALT_RELEASE
+    je .unset_alt
+    cmp al, KEY_CAPS_PRESS
+    je .toggle_caps
+    cmp al, KEY_NUM_LOCK_PRESS
+    je .toggle_num
+    cmp al, KEY_SCROLL_LOCK_PRESS
+    je .toggle_scroll
+    jmp .done
+
+.set_lshift:
+    or byte [kbd_flags], KEY_LSHIFT
+    jmp .done
+.unset_lshift:
+    and byte [kbd_flags], ~KEY_LSHIFT
+    jmp .done
+.set_rshift:
+    or byte [kbd_flags], KEY_RSHIFT
+    jmp .done
+.unset_rshift:
+    and byte [kbd_flags], ~KEY_RSHIFT
+    jmp .done
+.set_ctrl:
+    or byte [kbd_flags], KEY_CTRL
+    jmp .done
+.unset_ctrl:
+    and byte [kbd_flags], ~KEY_CTRL
+    jmp .done
+.set_alt:
+    or byte [kbd_flags], KEY_ALT
+    jmp .done
+.unset_alt:
+    and byte [kbd_flags], ~KEY_ALT
+    jmp .done
+.toggle_caps:
+    xor byte [kbd_leds], LED_CAPS
+    call set_leds
+    jmp .done
+.toggle_num:
+    xor byte [kbd_leds], LED_NUM
+    call set_leds
+    jmp .done
+.toggle_scroll:
+    xor byte [kbd_leds], LED_SCROLL
+    call set_leds
+    jmp .done
+.done:
+    pop eax
+    ret
+
+; Function: get_char - Enhanced keyboard input (Linux style)
 get_char:
     push ebx
     push ecx
@@ -167,7 +285,7 @@ get_char:
     push edi
     
     mov byte [extended_key], 0
-    mov byte [key_released], 0
+    mov byte [e1_prefix], 0
     
 .get_char_loop:
     ; Check if data is available
@@ -179,75 +297,52 @@ get_char:
     in al, KBD_DATA_PORT
     mov bl, al
     
-    ; Check for extended key prefix
+    ; Handle extended key prefixes
     cmp bl, 0xE0
-    je .handle_extended
+    je .handle_e0
+    cmp bl, 0xE1
+    je .handle_e1
     
-    ; Check if key was released
+    ; Handle key release
     test bl, 0x80
     jnz .handle_release
     
-    ; Key press
-    mov byte [key_released], 0
-    jmp .process_key
+    ; Handle key press
+    jmp .handle_press
     
-.handle_extended:
+.handle_e0:
     mov byte [extended_key], 1
     jmp .get_char_loop
     
+.handle_e1:
+    mov byte [e1_prefix], 1
+    jmp .get_char_loop
+    
 .handle_release:
-    mov byte [key_released], 1
     and bl, 0x7F
+    call handle_modifier
+    jmp .get_char_loop
     
-    ; Handle modifier key releases
-    cmp bl, (KEY_LSHIFT_PRESS & 0x7F)
-    je .release_shift
-    cmp bl, (KEY_RSHIFT_PRESS & 0x7F)
-    je .release_shift
-    cmp bl, (KEY_CTRL_PRESS & 0x7D)
-    je .release_ctrl
-    cmp bl, (KEY_ALT_PRESS & 0x7F)
-    je .release_alt
-    
-    ; Extended key handling for releases
+.handle_press:
+    ; Handle extended keys
     cmp byte [extended_key], 1
-    jne .get_char_loop
+    je .handle_extended_key
     
-    ; Reset extended key flag
-    mov byte [extended_key], 0
-    jmp .get_char_loop
-    
-.release_shift:
-    and byte [kbd_flags], ~KEY_SHIFT
-    jmp .get_char_loop
-    
-.release_ctrl:
-    and byte [kbd_flags], ~KEY_CTRL
-    jmp .get_char_loop
-    
-.release_alt:
-    and byte [kbd_flags], ~KEY_ALT
-    jmp .get_char_loop
-    
-.process_key:
-    cmp byte [extended_key], 1
-    je .process_extended_key
-    
-    ; Handle modifier key presses
+    ; Handle modifier keys
     cmp bl, KEY_LSHIFT_PRESS
-    je .press_shift
+    je .handle_modifier_key
     cmp bl, KEY_RSHIFT_PRESS
-    je .press_shift
+    je .handle_modifier_key
     cmp bl, KEY_CTRL_PRESS
-    je .press_ctrl
+    je .handle_modifier_key
     cmp bl, KEY_ALT_PRESS
-    je .press_alt
+    je .handle_modifier_key
     cmp bl, KEY_CAPS_PRESS
-    je .toggle_caps
+    je .handle_modifier_key
     cmp bl, KEY_NUM_LOCK_PRESS
-    je .toggle_num_lock
+    je .handle_modifier_key
     cmp bl, KEY_SCROLL_LOCK_PRESS
-    je .toggle_scroll_lock
+    je .handle_modifier_key
     
     ; Handle function keys
     cmp bl, KEY_F1
@@ -265,24 +360,43 @@ get_char:
     cmp bl, 128
     jae .get_char_loop
     
-    ; Get character from keyboard table
+    ; Get character from appropriate table
     movzx esi, bl
-    mov al, byte [kbd_flags]
-    test al, KEY_SHIFT
-    jz .use_normal_table
+    mov al, [kbd_flags]
     
-    ; Use shift table
-    mov al, byte [kbd_us_shift + esi]
+    ; Check for numeric keypad
+    cmp bl, 0x47
+    jb .not_numpad
+    cmp bl, 0x53
+    ja .not_numpad
+    
+    ; Handle numeric keypad
+    test al, KEY_NUM
+    jz .use_cursor_table
+    test al, KEY_LSHIFT | KEY_RSHIFT
+    jne .use_cursor_table
+    mov al, [num_table + esi - 0x47]
+    jmp .process_character
+    
+.use_cursor_table:
+    mov al, [cur_table + esi - 0x47]
+    jmp .process_character
+    
+.not_numpad:
+    ; Use regular keyboard table
+    test al, KEY_LSHIFT | KEY_RSHIFT
+    jz .use_normal_table
+    mov al, [kbd_us_shift + esi]
     jmp .process_character
     
 .use_normal_table:
-    mov al, byte [kbd_us + esi]
+    mov al, [kbd_us + esi]
     
 .process_character:
     cmp al, 0
     je .get_char_loop
     
-    ; Handle caps lock
+    ; Handle caps lock for letters
     cmp al, 'a'
     jb .check_caps_upper
     cmp al, 'z'
@@ -294,60 +408,32 @@ get_char:
     jmp .return_char
     
 .handle_lower_case:
-    mov bl, byte [kbd_flags]
+    mov bl, [kbd_flags]
     test bl, KEY_CAPS
     jz .return_char
-    sub al, 'a' - 'A'
+    sub al, 32          ; Convert to uppercase
     jmp .return_char
     
 .handle_upper_case:
-    mov bl, byte [kbd_flags]
+    mov bl, [kbd_flags]
     test bl, KEY_CAPS
-    jnz .check_shift_for_upper
-    test bl, KEY_SHIFT
     jz .return_char
-    add al, 'a' - 'A'
-    jmp .return_char
-    
-.check_shift_for_upper:
-    test bl, KEY_SHIFT
-    jz .return_char
-    add al, 'a' - 'A'
+    add al, 32          ; Convert to lowercase
     jmp .return_char
     
 .check_caps_upper:
-    mov bl, byte [kbd_flags]
+    mov bl, [kbd_flags]
     test bl, KEY_CAPS
     jz .return_char
     cmp al, 'A'
     jb .return_char
     cmp al, 'Z'
     ja .return_char
-    add al, 'a' - 'A'
+    add al, 32          ; Convert to lowercase
     jmp .return_char
     
-.press_shift:
-    or byte [kbd_flags], KEY_SHIFT
-    jmp .get_char_loop
-    
-.press_ctrl:
-    or byte [kbd_flags], KEY_CTRL
-    jmp .get_char_loop
-    
-.press_alt:
-    or byte [kbd_flags], KEY_ALT
-    jmp .get_char_loop
-    
-.toggle_caps:
-    xor byte [kbd_flags], KEY_CAPS
-    jmp .get_char_loop
-    
-.toggle_num_lock:
-    xor byte [kbd_flags], KEY_NUM_LOCK
-    jmp .get_char_loop
-    
-.toggle_scroll_lock:
-    xor byte [kbd_flags], KEY_SCROLL_LOCK
+.handle_modifier_key:
+    call handle_modifier
     jmp .get_char_loop
     
 .handle_function_key:
@@ -356,7 +442,7 @@ get_char:
     sub al, KEY_F1
     jmp .return_char
     
-.process_extended_key:
+.handle_extended_key:
     mov byte [extended_key], 0
     cmp bl, KEY_ARROW_UP
     je .return_arrow_up
@@ -425,7 +511,6 @@ get_char:
     jmp .done
     
 .return_char:
-    ; Return character in AL, zero extend to EAX
     movzx eax, al
     
 .done:
