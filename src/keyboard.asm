@@ -205,6 +205,11 @@ init_keyboard:
     mov byte [kbd_leds], LED_NUM
     call set_leds
     
+    ; Clear keyboard flags
+    mov byte [kbd_flags], 0
+    mov byte [extended_key], 0
+    mov byte [e1_prefix], 0
+    
     call kbd_wait
     pop eax
     ret
@@ -371,9 +376,11 @@ get_char:
     ja .not_numpad
     
     ; Handle numeric keypad
-    test al, KEY_NUM
+    mov bl, [kbd_leds]  ; Check LED state instead of kbd_flags
+    test bl, LED_NUM
     jz .use_cursor_table
-    test al, KEY_LSHIFT | KEY_RSHIFT
+    mov bl, [kbd_flags]
+    test bl, KEY_LSHIFT | KEY_RSHIFT
     jne .use_cursor_table
     mov al, [num_table + esi - 0x47]
     jmp .process_character
@@ -396,40 +403,24 @@ get_char:
     cmp al, 0
     je .get_char_loop
     
-    ; Handle caps lock for letters
+    ; Handle caps lock for letters only
+    mov bl, [kbd_leds]
+    test bl, LED_CAPS
+    jz .return_char
+    
     cmp al, 'a'
-    jb .check_caps_upper
+    jb .check_upper
     cmp al, 'z'
-    jbe .handle_lower_case
-    cmp al, 'A'
-    jb .return_char
-    cmp al, 'Z'
-    jbe .handle_upper_case
+    ja .check_upper
+    sub al, 32          ; Convert lowercase to uppercase
     jmp .return_char
     
-.handle_lower_case:
-    mov bl, [kbd_flags]
-    test bl, KEY_CAPS
-    jz .return_char
-    sub al, 32          ; Convert to uppercase
-    jmp .return_char
-    
-.handle_upper_case:
-    mov bl, [kbd_flags]
-    test bl, KEY_CAPS
-    jz .return_char
-    add al, 32          ; Convert to lowercase
-    jmp .return_char
-    
-.check_caps_upper:
-    mov bl, [kbd_flags]
-    test bl, KEY_CAPS
-    jz .return_char
+.check_upper:
     cmp al, 'A'
     jb .return_char
     cmp al, 'Z'
     ja .return_char
-    add al, 32          ; Convert to lowercase
+    add al, 32          ; Convert uppercase to lowercase
     jmp .return_char
     
 .handle_modifier_key:
@@ -443,7 +434,7 @@ get_char:
     jmp .return_char
     
 .handle_extended_key:
-    mov byte [extended_key], 0
+    mov byte [extended_key], 0  ; Reset flag immediately
     cmp bl, KEY_ARROW_UP
     je .return_arrow_up
     cmp bl, KEY_ARROW_DOWN
@@ -464,6 +455,7 @@ get_char:
     je .return_ins
     cmp bl, KEY_DELETE
     je .return_del
+    ; If unknown extended key, continue loop
     jmp .get_char_loop
     
 .return_esc:
