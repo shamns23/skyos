@@ -26,6 +26,7 @@ void show_chmod_help();
 void show_pwd_help();
 void show_sysinfo_help();
 void show_fastfetch_help();
+void show_hardware_help();
 void show_shutdown_help();
 void show_clear_help();
 void show_memory_help();
