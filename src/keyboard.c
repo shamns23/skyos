@@ -1,275 +1,271 @@
 /*
- * Simple keyboard driver for custom OS
- * Compatible with the existing keyboard.h interface
+ * Keyboard driver for oszoOS
+ * Converted from Linux keyboard.S to C implementation
+ * Compatible with oszoOS system architecture
  */
 
-#include "../include/keyboard.h"
-#include "../include/io.h"
+#include "keyboard.h"
+#include "io.h"
+#include "display.h"
 
 // Global keyboard state variables
 unsigned char kbd_flags = 0;
-unsigned char kbd_leds = 0;
+unsigned char kbd_leds = 2; // num-lock on by default
 unsigned char extended_key = 0;
 unsigned char e1_prefix = 0;
 
 // US keyboard layout (normal)
 unsigned char kbd_us[128] = {
-    0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b', '\t',
-    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n', 0,
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0, '\\',
-    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0, '*', 0, ' ', 0,
+    0,  27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
+    '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
+    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
+    0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,
+    '*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, '-', 0, 0, 0, '+', 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 // US keyboard layout (shift)
 unsigned char kbd_us_shift[128] = {
-    0, 27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b', '\t',
-    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,
-    'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~', 0, '|',
-    'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0, '*', 0, ' ', 0,
+    0,  27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b',
+    '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n',
+    0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',
+    0, '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?', 0,
+    '*', 0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, '-', 0, 0, 0, '+', 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
 // Numeric keypad layout
-unsigned char num_table[13] = "789-456+1230.";
+unsigned char num_table[13] = "789 456 1230,";
 
 // Cursor keys layout
-unsigned char cur_table[13] = "1A5-DGC+4B623";
+unsigned char cur_table[13] = "HA5 DGC YB623";
 
 // Wait for keyboard controller to be ready
-void kbd_wait() {
-    while (inb(KBD_STATUS_PORT) & 0x02) {
-        // Wait until input buffer is empty
-    }
+void kbd_wait(void) {
+    while (inb(KEYBOARD_STATUS_PORT) & 0x02);
 }
 
-// Wait for keyboard controller output
-void kb_wait() {
-    while (!(inb(KBD_STATUS_PORT) & 0x01)) {
-        // Wait until output buffer is full
-    }
+// Alternative wait function (compatibility)
+void kb_wait(void) {
+    kbd_wait();
 }
 
 // Set keyboard LEDs
-void set_leds() {
+void set_leds(void) {
     kbd_wait();
-    outb(KBD_DATA_PORT, 0xED);  // Set LEDs command
+    outb(KEYBOARD_DATA_PORT, 0xED); // Set LEDs command
     kbd_wait();
-    outb(KBD_DATA_PORT, kbd_leds & 0x07);  // LED state
-}
-
-// Initialize keyboard
-void init_keyboard() {
-    // Clear all flags
-    kbd_flags = 0;
-    kbd_leds = 0;
-    extended_key = 0;
-    e1_prefix = 0;
-    
-    // Enable keyboard
-    kbd_wait();
-    outb(KBD_COMMAND_PORT, 0xAE);  // Enable keyboard interface
-    
-    // Set keyboard to scan code set 1
-    kbd_wait();
-    outb(KBD_DATA_PORT, 0xF0);
-    kbd_wait();
-    outb(KBD_DATA_PORT, 0x01);
-    
-    // Enable keyboard
-    kbd_wait();
-    outb(KBD_DATA_PORT, 0xF4);
+    outb(KEYBOARD_DATA_PORT, kbd_leds);
 }
 
 // Handle modifier keys
-void handle_modifier(unsigned char scancode) {
+void handle_modifier_key(unsigned char scancode, unsigned char pressed) {
     switch (scancode) {
-        case KEY_LSHIFT_PRESS:
-            kbd_flags |= KEY_LSHIFT;
+        case KEY_LSHIFT_SC:
+            if (pressed) kbd_flags |= KEY_LSHIFT;
+            else kbd_flags &= ~KEY_LSHIFT;
             break;
-        case KEY_LSHIFT_RELEASE:
-            kbd_flags &= ~KEY_LSHIFT;
+        case KEY_RSHIFT_SC:
+            if (pressed) kbd_flags |= KEY_RSHIFT;
+            else kbd_flags &= ~KEY_RSHIFT;
             break;
-        case KEY_RSHIFT_PRESS:
-            kbd_flags |= KEY_RSHIFT;
+        case KEY_LCTRL:
+            if (pressed) {
+                if (extended_key) kbd_flags |= (KEY_CTRL << 1);
+                else kbd_flags |= KEY_CTRL;
+            } else {
+                if (extended_key) kbd_flags &= ~(KEY_CTRL << 1);
+                else kbd_flags &= ~KEY_CTRL;
+            }
             break;
-        case KEY_RSHIFT_RELEASE:
-            kbd_flags &= ~KEY_RSHIFT;
+        case KEY_LALT:
+            if (pressed) {
+                if (extended_key) kbd_flags |= (KEY_ALT << 1);
+                else kbd_flags |= KEY_ALT;
+            } else {
+                if (extended_key) kbd_flags &= ~(KEY_ALT << 1);
+                else kbd_flags &= ~KEY_ALT;
+            }
             break;
-        case KEY_CTRL_PRESS:
-            kbd_flags |= KEY_CTRL;
+        case KEY_CAPS_SC:
+            if (pressed) {
+                if (!(kbd_flags & KEY_E0)) {
+                    kbd_leds ^= LED_CAPS;
+                    kbd_flags ^= KEY_CAPS;
+                    kbd_flags |= KEY_E0;
+                    set_leds();
+                }
+            } else {
+                kbd_flags &= ~KEY_E0;
+            }
             break;
-        case KEY_CTRL_RELEASE:
-            kbd_flags &= ~KEY_CTRL;
+        case KEY_NUM_SC:
+            if (pressed) {
+                kbd_leds ^= LED_NUM;
+                set_leds();
+            }
             break;
-        case KEY_ALT_PRESS:
-            kbd_flags |= KEY_ALT;
-            break;
-        case KEY_ALT_RELEASE:
-            kbd_flags &= ~KEY_ALT;
-            break;
-        case KEY_CAPS_PRESS:
-            kbd_leds ^= LED_CAPS;
-            set_leds();
-            break;
-        case KEY_NUM_LOCK_PRESS:
-            kbd_leds ^= LED_NUM;
-            set_leds();
-            break;
-        case KEY_SCROLL_LOCK_PRESS:
-            kbd_leds ^= LED_SCROLL;
-            set_leds();
+        case KEY_SCROLL_SC:
+            if (pressed) {
+                kbd_leds ^= LED_SCROLL;
+                set_leds();
+            }
             break;
     }
 }
 
-// Get character from keyboard
-int get_char() {
-    unsigned char scancode;
-    unsigned char *table;
-    unsigned char ch;
+// Handle cursor/numeric keypad
+char handle_cursor_keys(unsigned char scancode) {
+    unsigned char key_index = scancode - 0x47;
     
-    // Check if data is available
-    if (!(inb(KBD_STATUS_PORT) & 0x01)) {
-        return 0;  // No data available
-    }
+    if (key_index > 12) return 0;
     
-    scancode = inb(KBD_DATA_PORT);
-    
-    // Handle extended key prefixes
-    if (scancode == 0xE0) {
-        extended_key = 1;
+    // Check for Ctrl+Alt+Del
+    if (scancode == KEY_DELETE && (kbd_flags & KEY_CTRL) && (kbd_flags & KEY_ALT)) {
+        // Reboot system (placeholder)
         return 0;
     }
     
-    if (scancode == 0xE1) {
-        e1_prefix = 1;
-        return 0;
+    // Return special key codes for arrow keys
+    switch (scancode) {
+        case 0x48: return extended_key ? ARROW_UP : '8';
+        case 0x50: return extended_key ? ARROW_DOWN : '2';
+        case 0x4B: return extended_key ? ARROW_LEFT : '4';
+        case 0x4D: return extended_key ? ARROW_RIGHT : '6';
+        case 0x47: return extended_key ? KEY_HOME_CODE : '7';
+        case 0x4F: return extended_key ? KEY_END_CODE : '1';
+        case 0x53: return extended_key ? KEY_DEL_CODE : '.';
     }
     
-    // Handle key release (high bit set)
-    if (scancode & 0x80) {
-        scancode &= 0x7F;  // Remove release bit
-        
-        // Handle modifier key releases
-        handle_modifier(scancode | 0x80);
-        
-        extended_key = 0;
-        return 0;
-    }
-    
-    // Handle modifier key presses
-    if (scancode == KEY_LSHIFT_PRESS || scancode == KEY_RSHIFT_PRESS ||
-        scancode == KEY_CTRL_PRESS || scancode == KEY_ALT_PRESS ||
-        scancode == KEY_CAPS_PRESS || scancode == KEY_NUM_LOCK_PRESS ||
-        scancode == KEY_SCROLL_LOCK_PRESS) {
-        handle_modifier(scancode);
-        extended_key = 0;
-        return 0;
-    }
-    
-    // Handle extended keys
+    // E0 prefix forces cursor movement
     if (extended_key) {
-        extended_key = 0;
-        switch (scancode) {
-            case KEY_ARROW_UP:
-                return ARROW_UP;
-            case KEY_ARROW_DOWN:
-                return ARROW_DOWN;
-            case KEY_ARROW_LEFT:
-                return ARROW_LEFT;
-            case KEY_ARROW_RIGHT:
-                return ARROW_RIGHT;
-            case KEY_HOME:
-                return KEY_HOME_CODE;
-            case KEY_END:
-                return KEY_END_CODE;
-            case KEY_PAGE_UP:
-                return KEY_PGUP_CODE;
-            case KEY_PAGE_DOWN:
-                return KEY_PGDN_CODE;
-            case KEY_INSERT:
-                return KEY_INS_CODE;
-            case KEY_DELETE:
-                return KEY_DEL_CODE;
-            default:
-                return 0;
-        }
+        return cur_table[key_index];
     }
     
-    // Handle function keys
+    // Num lock off or shift pressed forces cursor
+    if (!(kbd_leds & LED_NUM) || (kbd_flags & (KEY_LSHIFT | KEY_RSHIFT))) {
+        return cur_table[key_index];
+    }
+    
+    // Return numeric keypad character
+    return num_table[key_index];
+}
+
+// Handle function keys
+char handle_function_keys(unsigned char scancode) {
     if (scancode >= KEY_F1 && scancode <= KEY_F10) {
-        return F1_CODE + (scancode - KEY_F1);
+        // Function keys - return special codes
+        return 0xF0 + (scancode - KEY_F1);
     }
-    if (scancode == KEY_F11) {
-        return F11_CODE;
-    }
-    if (scancode == KEY_F12) {
-        return F12_CODE;
-    }
+    return 0;
+}
+
+// Initialize keyboard
+void init_keyboard(void) {
+    kbd_flags = 0;
+    extended_key = 0;
+    e1_prefix = 0;
+    kbd_leds = 2; // Num lock on
+    set_leds();
+}
+
+// Get character from keyboard
+char get_char(void) {
+    unsigned char scancode;
+    unsigned char pressed;
+    char ch;
     
-    // Handle numeric keypad
-    if (scancode >= 0x47 && scancode <= 0x53) {
-        if (kbd_leds & LED_NUM) {
-            // Num lock on - return numbers
-            return num_table[scancode - 0x47];
-        } else {
-            // Num lock off - return cursor keys
-            switch (scancode) {
-                case 0x47: return KEY_HOME_CODE;
-                case 0x48: return ARROW_UP;
-                case 0x49: return KEY_PGUP_CODE;
-                case 0x4B: return ARROW_LEFT;
-                case 0x4D: return ARROW_RIGHT;
-                case 0x4F: return KEY_END_CODE;
-                case 0x50: return ARROW_DOWN;
-                case 0x51: return KEY_PGDN_CODE;
-                case 0x52: return KEY_INS_CODE;
-                case 0x53: return KEY_DEL_CODE;
-                default: return 0;
+    while (1) {
+        // Wait for key press
+        while (!(inb(KEYBOARD_STATUS_PORT) & 0x01));
+        
+        scancode = inb(KEYBOARD_DATA_PORT);
+        
+        // Handle extended key prefixes
+        if (scancode == 0xE0) {
+            extended_key = 1;
+            continue;
+        }
+        
+        if (scancode == 0xE1) {
+            e1_prefix = 1;
+            continue;
+        }
+        
+        // Determine if key is pressed or released
+        pressed = !(scancode & KEY_RELEASE);
+        scancode &= 0x7F; // Remove release bit
+        
+        // Handle modifier keys
+        if (scancode == KEY_LSHIFT_SC || scancode == KEY_RSHIFT_SC ||
+            scancode == KEY_LCTRL || scancode == KEY_LALT ||
+            scancode == KEY_CAPS_SC || scancode == KEY_NUM_SC ||
+            scancode == KEY_SCROLL_SC) {
+            handle_modifier_key(scancode, pressed);
+            extended_key = 0;
+            continue;
+        }
+        
+        // Only process key press events for regular keys
+        if (!pressed) {
+            extended_key = 0;
+            continue;
+        }
+        
+        // Handle cursor/numeric keypad
+        if (scancode >= 0x47 && scancode <= 0x53) {
+            ch = handle_cursor_keys(scancode);
+            if (ch) {
+                extended_key = 0;
+                return ch;
             }
         }
-    }
-    
-    // Handle normal keys
-    if (scancode >= 128) {
-        return 0;
-    }
-    
-    // Choose the appropriate table
-    if (kbd_flags & (KEY_LSHIFT | KEY_RSHIFT)) {
-        table = kbd_us_shift;
-    } else {
-        table = kbd_us;
-    }
-    
-    ch = table[scancode];
-    
-    // Handle caps lock for letters
-    if (ch >= 'a' && ch <= 'z') {
-        if (kbd_leds & LED_CAPS) {
-            ch = ch - 'a' + 'A';
+        
+        // Handle function keys
+        ch = handle_function_keys(scancode);
+        if (ch) {
+            extended_key = 0;
+            return ch;
         }
-    } else if (ch >= 'A' && ch <= 'Z') {
-        if (kbd_leds & LED_CAPS) {
-            ch = ch - 'A' + 'a';
+        
+        // Handle ESC key
+        if (scancode == KEY_ESC) {
+            extended_key = 0;
+            return KEY_ESC_CODE;
         }
-    }
-    
-    // Handle control key combinations
-    if (kbd_flags & KEY_CTRL) {
-        if (ch >= 'a' && ch <= 'z') {
-            ch = ch - 'a' + 1;  // Ctrl+A = 1, Ctrl+B = 2, etc.
-        } else if (ch >= 'A' && ch <= 'Z') {
-            ch = ch - 'A' + 1;
+        
+        // Handle regular keys
+        if (scancode < 128) {
+            if (kbd_flags & (KEY_LSHIFT | KEY_RSHIFT)) {
+                ch = kbd_us_shift[scancode];
+            } else {
+                ch = kbd_us[scancode];
+            }
+            
+            // Handle caps lock for letters
+            if (ch >= 'a' && ch <= 'z' && (kbd_leds & LED_CAPS)) {
+                ch = ch - 'a' + 'A';
+            } else if (ch >= 'A' && ch <= 'Z' && (kbd_leds & LED_CAPS) && 
+                      !(kbd_flags & (KEY_LSHIFT | KEY_RSHIFT))) {
+                ch = ch - 'A' + 'a';
+            }
+            
+            if (ch) {
+                extended_key = 0;
+                return ch;
+            }
         }
+        
+        extended_key = 0;
     }
-    
-    return ch;
+}
+
+// Keyboard interrupt handler (placeholder)
+void keyboard_interrupt(void) {
+    // This would be called by the interrupt handler
+    // For now, we use polling in get_char()
 }
