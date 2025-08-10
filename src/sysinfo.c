@@ -102,7 +102,7 @@ SystemInfo get_system_info() {
     
     // OS Information
     strcpy(info.os_name, "SkyOS");
-    strcpy(info.kernel_version, "4.1.0");
+    strcpy(info.kernel_version, "4.1.1");
     strcpy(info.architecture, "x86_64");
     
     // CPU Information
@@ -248,8 +248,8 @@ void display_fastfetch_style() {
     shell_print_colored("       |:_/ |\n", LIGHT_CYAN, BLACK);
     shell_print_colored("      //   \\\n", LIGHT_CYAN, BLACK);
     shell_print_colored("     (|     | )\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("    /'\_   _/'`\ \n", LIGHT_CYAN, BLACK);
-    shell_print_colored("    \___)=(___/\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("    /'_   _/'` \n", LIGHT_CYAN, BLACK);
+    shell_print_colored("    ___)=(___/\n", LIGHT_CYAN, BLACK);
     shell_print_char('\n');
     
     // System Information in fastfetch format
