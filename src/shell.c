@@ -60,6 +60,7 @@ void show_quick_help() {
     shell_print_string("  clear        - Clear screen\n");
     shell_print_string("  sysinfo      - System information\n");
     shell_print_string("  fastfetch    - Stylized system info\n");
+    shell_print_string("  memory       - Memory management and info\n");
     shell_print_string("  color <f> <b> - Set colors (0-15)\n");
     shell_print_string("  shutdown     - Shutdown system\n\n");
     shell_print_string(" FAT32 Filesystem:\n");
@@ -96,6 +97,7 @@ void show_full_help() {
         "  clear            - Clear terminal screen\n"
         "  sysinfo          - Show detailed system information\n"
         "  fastfetch        - Show stylized system info with ASCII art\n"
+        "  memory           - Memory management and statistics\n"
         "  debug            - Display debug info & filesystem stats\n"
         "  shutdown         - Safely shutdown the system\n\n"
         "🔹 FAT32 FILESYSTEM:\n"
@@ -154,13 +156,14 @@ void show_command_help(const char* command) {
     else if (strcmp(command, "fastfetch") == 0) show_fastfetch_help();
     else if (strcmp(command, "shutdown") == 0) show_shutdown_help();
     else if (strcmp(command, "clear") == 0) show_clear_help();
+    else if (strcmp(command, "memory") == 0) show_memory_help();
     else {
         shell_print_colored("\n❌ Unknown command: ", COLOR_ERROR, BLACK);
         shell_print_colored(command, COLOR_WARNING, BLACK);
         shell_print_string("\n\n💡 Available commands:\n");
         shell_print_string("  ls, cd, pwd, mkdir, touch, cat, rm, chmod\n");
         shell_print_string("  write, clear, sysinfo, fastfetch, color\n");
-        shell_print_string("  fat32, debug, shutdown\n\n");
+        shell_print_string("  memory, fat32, debug, shutdown\n\n");
         shell_print_string("Use 'help' for quick reference or 'help --full' for complete documentation.\n\n");
     }
 }
@@ -427,4 +430,23 @@ void show_clear_help() {
     shell_print_string("Description:\n");
     shell_print_string("  Clears the terminal screen and moves the\n");
     shell_print_string("  cursor to the top-left corner.\n\n");
+}
+
+void show_memory_help() {
+    shell_print_colored("\n=== 🧠 memory - Memory Management ===\n", COLOR_INFO, BLACK);
+    shell_print_string("Usage: memory [subcommand]\n\n");
+    shell_print_string("🔧 Subcommands:\n");
+    shell_print_string("  (none)     - Show memory statistics\n");
+    shell_print_string("  dump       - Dump memory blocks information\n");
+    shell_print_string("  check      - Check memory integrity\n");
+    shell_print_string("  test       - Run allocation test\n\n");
+    shell_print_string("📝 Examples:\n");
+    shell_print_string("  memory     - Show total/used/free memory\n");
+    shell_print_string("  memory dump - Show detailed block information\n");
+    shell_print_string("  memory check - Verify memory structure integrity\n");
+    shell_print_string("  memory test  - Test allocation/deallocation\n\n");
+    shell_print_string("📖 Description:\n");
+    shell_print_string("Manages system memory with simple malloc/free implementation.\n");
+    shell_print_string("Provides memory statistics and debugging capabilities.\n\n");
+    shell_print_string("💡 Tip: Use 'memory check' if experiencing memory issues\n\n");
 }

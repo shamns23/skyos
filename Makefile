@@ -72,14 +72,16 @@ $(BUILD_DIR)/keyboard.o: src/keyboard.c include/keyboard.h $(BUILD_DIR)
 $(BUILD_DIR)/filesystem.o: src/filesystem.c include/filesystem.h $(BUILD_DIR)
 	gcc $(CFLAGS) -c $< -o $@
 
-
+# تجميع ملف memory.c
+$(BUILD_DIR)/memory.o: src/memory.c include/memory.h $(BUILD_DIR)
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف shell.c
 $(BUILD_DIR)/shell.o: src/shell.c include/shell.h $(BUILD_DIR)
 	gcc $(CFLAGS) -c $< -o $@
 
 # ربط ملفات النواة
-$(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/fat32.o $(BUILD_DIR)/string_utils.o $(BUILD_DIR)/display.o $(BUILD_DIR)/io.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/filesystem.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/command_handler.o
+$(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/fat32.o $(BUILD_DIR)/string_utils.o $(BUILD_DIR)/display.o $(BUILD_DIR)/io.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/filesystem.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/command_handler.o $(BUILD_DIR)/memory.o
 	ld -m elf_i386 -o $@ -T config/linker.ld $^ -nostdlib
 
 # تشغيل نظام التشغيل باستخدام QEMU

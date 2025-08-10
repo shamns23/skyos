@@ -5,6 +5,7 @@
 #include "shell.h"
 #include "string_utils.h"
 #include "fat32.h"
+#include "memory.h"
 
 // Command handler functions
 static void cmd_clear(char* args __attribute__((unused))) {
@@ -452,6 +453,76 @@ static void cmd_sysinfo(char* args __attribute__((unused))) {
     shell_print_string("\n");
 }
 
+static void cmd_memory(char* args) {
+    if (!args) {
+        shell_print_colored("Memory Information:\n", COLOR_INFO, BLACK);
+        
+        char buffer[32];
+        
+        shell_print_colored("Total: ", LIGHT_GREEN, BLACK);
+        itoa(memory_get_total() / 1024, buffer);
+        shell_print_string(buffer);
+        shell_print_string(" KB\n");
+        
+        shell_print_colored("Used: ", LIGHT_GREEN, BLACK);
+        itoa(memory_get_used() / 1024, buffer);
+        shell_print_string(buffer);
+        shell_print_string(" KB\n");
+        
+        shell_print_colored("Free: ", LIGHT_GREEN, BLACK);
+        itoa(memory_get_free() / 1024, buffer);
+        shell_print_string(buffer);
+        shell_print_string(" KB\n");
+        
+        shell_print_colored("Usage: ", LIGHT_GREEN, BLACK);
+        int usage = (memory_get_used() * 100) / memory_get_total();
+        itoa(usage, buffer);
+        shell_print_string(buffer);
+        shell_print_string("%\n");
+        
+        return;
+    }
+    
+    char* saveptr;
+    char* subcommand = strtok_r(args, " ", &saveptr);
+    
+    if (my_strncmp(subcommand, "dump", 4) == 0) {
+        memory_dump();
+    } else if (my_strncmp(subcommand, "check", 5) == 0) {
+        if (memory_check_integrity()) {
+            shell_print_colored("Memory integrity: OK\n", COLOR_SUCCESS, BLACK);
+        } else {
+            shell_print_colored("Memory integrity: FAILED\n", COLOR_ERROR, BLACK);
+        }
+    } else if (my_strncmp(subcommand, "test", 4) == 0) {
+        shell_print_colored("Testing memory allocation...\n", COLOR_INFO, BLACK);
+        
+        void* ptr1 = malloc(100);
+        void* ptr2 = malloc(200);
+        void* ptr3 = malloc(50);
+        
+        if (ptr1 && ptr2 && ptr3) {
+            shell_print_colored("✓ Allocations successful\n", COLOR_SUCCESS, BLACK);
+            
+            free(ptr2);
+            shell_print_colored("✓ Free test successful\n", COLOR_SUCCESS, BLACK);
+            
+            void* ptr4 = malloc(150);
+            if (ptr4) {
+                shell_print_colored("✓ Reallocation test successful\n", COLOR_SUCCESS, BLACK);
+                free(ptr4);
+            }
+            
+            free(ptr1);
+            free(ptr3);
+        } else {
+            shell_print_colored("✗ Memory allocation failed\n", COLOR_ERROR, BLACK);
+        }
+    } else {
+        shell_print_colored("Usage: memory <dump|check|test>\n", COLOR_INFO, BLACK);
+    }
+}
+
 static void cmd_fastfetch(char* args __attribute__((unused))) {
     shell_print_colored("                    /\\\n", LIGHT_CYAN, BLACK);
     shell_print_colored("                   /  \\\n", LIGHT_CYAN, BLACK);
@@ -774,6 +845,7 @@ static const CommandEntry command_table[] = {
     {"shutdown", cmd_shutdown},
     {"fat32", cmd_fat32},
     {"debug", cmd_debug},
+    {"memory", cmd_memory},
     {NULL, NULL} // End marker
 };
 

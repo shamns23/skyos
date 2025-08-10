@@ -4,6 +4,7 @@
 #include "display.h"
 #include "keyboard.h"
 #include "filesystem.h"
+#include "memory.h"
 
 #include "shell.h"
 #include "command_handler.h"
@@ -48,6 +49,7 @@ void kernel_main() {
     shell_print_string("Enhanced keyboard & FAT32 support. Use 'fat32 init' to initialize FAT32 FS.\n\n");
     init_keyboard();   
     init_filesystem();
+    memory_init();
     
     shell_print_colored("Initializing FAT32 file system...\n", COLOR_INFO, BLACK);
     if (fat32_init() == 0) {
