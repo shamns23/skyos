@@ -691,9 +691,9 @@ void display_detailed_sysinfo() {
     SystemInfo info = get_system_info();
     char buffer[64];
     
-    shell_print_colored("═══════════════════════════════════════════════════════════════════════════════\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("===============================================================================\n", LIGHT_CYAN, BLACK);
     shell_print_colored("                          ADVANCED SYSTEM INFORMATION\n", LIGHT_GREEN, BLACK);
-    shell_print_colored("═══════════════════════════════════════════════════════════════════════════════\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("===============================================================================\n", LIGHT_CYAN, BLACK);
     
     // System Overview
     shell_print_colored("🖥️  SYSTEM OVERVIEW\n", LIGHT_CYAN, BLACK);
@@ -922,7 +922,7 @@ void display_detailed_sysinfo() {
     shell_print_string(info.thermal.thermal_status);
     shell_print_char('\n');
     
-    shell_print_colored("═══════════════════════════════════════════════════════════════════════════════\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("===============================================================================\n", LIGHT_CYAN, BLACK);
 }
 
 // Display enhanced fastfetch-style system information
@@ -931,16 +931,16 @@ void display_fastfetch_style() {
     char buffer[64];
     
     // Enhanced ASCII Logo
-    shell_print_colored("        ████████████████████████████████\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("       █  ▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄  █\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("       █  █  █  █  █  █  █  █  █  █  █  █\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("       █  ██████  ██████  ██████  ██████  █\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("       ████████████████████████████████\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("              █    █\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("              █    █\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("            ████████\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("           █        █\n", LIGHT_BLUE, BLACK);
-    shell_print_colored("           ██████████\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("        ################################\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("       #  #####  #####  #####  #####  #\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("       #  #   #  #   #  #   #  #   #  #\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("       #  #####  #####  #####  #####  #\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("       ################################\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("              #    #\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("              #    #\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("            ########\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("           #        #\n", LIGHT_BLUE, BLACK);
+    shell_print_colored("           ##########\n", LIGHT_BLUE, BLACK);
     
     shell_print_colored("\n", BLACK, BLACK);
     
