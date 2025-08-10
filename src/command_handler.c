@@ -398,59 +398,10 @@ static void cmd_color(char* args) {
     shell_print_string("Color changed\n");
 }
 
+#include "sysinfo.h"
+
 static void cmd_sysinfo(char* args __attribute__((unused))) {
-    shell_print_colored("SkyOS System Information\n", LIGHT_GREEN, BLACK);
-    shell_print_string("Version: 0.3.1\n");
-    shell_print_string("Memory: 640KB Base, 64KB Extended\n");
-    shell_print_string("Display: VGA Text Mode (80x25)\n");
-    shell_print_string("Filesystem: In-memory Hierarchical FS\n");
-    shell_print_string("Files: ");
-    int files = 0, dirs = 0;
-    for (int i = 0; i < fs_entry_count; i++) {
-        if (i < fs_entry_count) {
-            if (filesystem[i].type == TYPE_FILE) {
-                files++;
-            } else {
-                dirs++;
-            }
-        }
-    }
-    char num_str[10];
-    int idx = 0, temp = files;
-    if (temp == 0) {
-        num_str[idx++] = '0';
-    } else {
-        while (temp > 0) {
-            num_str[idx++] = '0' + (temp % 10);
-            temp /= 10;
-        }
-    }
-    num_str[idx] = '\0';
-    for (int j = 0; j < idx / 2; j++) {
-        char temp = num_str[j];
-        num_str[j] = num_str[idx - j - 1];
-        num_str[idx - j - 1] = temp;
-    }
-    shell_print_string(num_str);
-    shell_print_string(", Directories: ");
-    idx = 0;
-    temp = dirs;
-    if (temp == 0) {
-        num_str[idx++] = '0';
-    } else {
-        while (temp > 0) {
-            num_str[idx++] = '0' + (temp % 10);
-            temp /= 10;
-        }
-    }
-    num_str[idx] = '\0';
-    for (int j = 0; j < idx / 2; j++) {
-        char temp = num_str[j];
-        num_str[j] = num_str[idx - j - 1];
-        num_str[idx - j - 1] = temp;
-    }
-    shell_print_string(num_str);
-    shell_print_string("\n");
+    display_detailed_sysinfo();
 }
 
 static void cmd_memory(char* args) {
@@ -524,85 +475,7 @@ static void cmd_memory(char* args) {
 }
 
 static void cmd_fastfetch(char* args __attribute__((unused))) {
-    shell_print_colored("                    /\\\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("                   /  \\\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("                  /    \\\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("                 /      \\\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("                /   ,,   \\\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("               /   |  |   \\\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("              /_-''    ''-_\\\n", LIGHT_CYAN, BLACK);
-    shell_print_colored("\n", WHITE, BLACK);
-    shell_print_colored("OS: ", LIGHT_GREEN, BLACK);
-    shell_print_string("SkyOS v4.1\n");
-    shell_print_colored("Kernel: ", LIGHT_GREEN, BLACK);
-    shell_print_string("SkyOS Kernel v4.1\n");
-    shell_print_colored("Architecture: ", LIGHT_GREEN, BLACK);
-    shell_print_string("x86 (32-bit)\n");
-    shell_print_colored("Memory: ", LIGHT_GREEN, BLACK);
-    shell_print_string("640KB Base + 64KB Extended\n");
-    shell_print_colored("Display: ", LIGHT_GREEN, BLACK);
-    shell_print_string("VGA Text Mode (80x25)\n");
-    shell_print_colored("Shell: ", LIGHT_GREEN, BLACK);
-    shell_print_string("SkyOS Shell v4.1\n");
-    shell_print_colored("Terminal: ", LIGHT_GREEN, BLACK);
-    shell_print_string("VGA Console\n");
-    shell_print_colored("CPU: ", LIGHT_GREEN, BLACK);
-    shell_print_string("Intel 80386+ Compatible\n");
-    shell_print_colored("Filesystem: ", LIGHT_GREEN, BLACK);
-    shell_print_string("In-Memory Hierarchical FS\n");
-    int files = 0, dirs = 0;
-    for (int i = 0; i < fs_entry_count; i++) {
-        if (filesystem[i].type == TYPE_FILE) {
-            files++;
-        } else {
-            dirs++;
-        }
-    }
-    shell_print_colored("Files: ", LIGHT_GREEN, BLACK);
-    char num_str[10];
-    int idx = 0, temp = files;
-    if (temp == 0) {
-        num_str[idx++] = '0';
-    } else {
-        while (temp > 0) {
-            num_str[idx++] = '0' + (temp % 10);
-            temp /= 10;
-        }
-    }
-    num_str[idx] = '\0';
-    for (int j = 0; j < idx / 2; j++) {
-        char temp = num_str[j];
-        num_str[j] = num_str[idx - j - 1];
-        num_str[idx - j - 1] = temp;
-    }
-    shell_print_string(num_str);
-    shell_print_string(" files, ");
-    idx = 0;
-    temp = dirs;
-    if (temp == 0) {
-        num_str[idx++] = '0';
-    } else {
-        while (temp > 0) {
-            num_str[idx++] = '0' + (temp % 10);
-            temp /= 10;
-        }
-    }
-    num_str[idx] = '\0';
-    for (int j = 0; j < idx / 2; j++) {
-        char temp = num_str[j];
-        num_str[j] = num_str[idx - j - 1];
-        num_str[idx - j - 1] = temp;
-    }
-    shell_print_string(num_str);
-    shell_print_string(" directories\n");
-    shell_print_colored("Uptime: ", LIGHT_GREEN, BLACK);
-    shell_print_string("System Ready\n");
-    shell_print_colored("Packages: ", LIGHT_GREEN, BLACK);
-    shell_print_string("Built-in Commands\n");
-    shell_print_colored("Theme: ", LIGHT_GREEN, BLACK);
-    shell_print_string("VGA Color Palette\n");
-    shell_print_colored("Icons: ", LIGHT_GREEN, BLACK);
-    shell_print_string("ASCII Art\n");
+    display_fastfetch_style();
 }
 
 static void cmd_write(char* args) {

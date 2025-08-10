@@ -8,6 +8,7 @@
 
 #include "shell.h"
 #include "command_handler.h"
+#include "sysinfo.h"
 // Global variables for kernel
 // Display variables moved to display.c
 // Editor variables moved to editor.c
@@ -50,6 +51,7 @@ void kernel_main() {
     init_keyboard();   
     init_filesystem();
     memory_init();
+    sysinfo_init();
     
     shell_print_colored("Initializing FAT32 file system...\n", COLOR_INFO, BLACK);
     if (fat32_init() == 0) {
