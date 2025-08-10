@@ -591,7 +591,7 @@ static void cmd_fat32(char* args) {
             shell_print_colored("FAT32\n", COLOR_SUCCESS, BLACK);
             shell_print_colored("Cluster Size: 4KB\n", COLOR_INFO, BLACK);
             shell_print_colored("Sector Size: 512 bytes\n", COLOR_INFO, BLACK);
-            shell_print_colored("Volume Label: SKYOS\n", COLOR_INFO, BLACK);
+            shell_print_colored("Volume Label: OSZOOS\n", COLOR_INFO, BLACK);
         } else {
             shell_print_colored("Simple RAM FS\n", COLOR_WARNING, BLACK);
             shell_print_colored("Max Files: 32\n", COLOR_INFO, BLACK);

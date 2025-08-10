@@ -5,7 +5,7 @@
 #include <string.h>
 
 void shutdown() {
-    shell_print_colored("Shutting down SkyOS...\n", COLOR_INFO, BLACK);
+    shell_print_colored("Shutting down oszoOS...\n", COLOR_INFO, BLACK);
     delay();
     
     // ACPI shutdown
@@ -46,7 +46,7 @@ void print_with_pagination(const char* text) {
 }
 
 void show_quick_help() {
-    shell_print_colored("\n=== SkyOS v4.1 - Quick Reference ===\n", COLOR_INFO, BLACK);
+    shell_print_colored("\n=== oszoOS v4.1 - Quick Reference ===\n", COLOR_INFO, BLACK);
     shell_print_string(" Files & Directories:\n");
     shell_print_string("  ls [-la]     - List files/directories\n");
     shell_print_string("  cd <dir>     - Change directory\n");
@@ -73,7 +73,7 @@ void show_quick_help() {
 
 void show_full_help() {
     const char* help_text = 
-        "\n=== SkyOS v4.1 - Complete Documentation ===\n\n"
+        "=== oszoOS v4.1 - Complete Documentation ===\n\n"
         "NAVIGATION & DIRECTORY COMMANDS:\n"
         "  ls [options]     - List directory contents\n"
         "    -l             - Long format with permissions, size, date\n"
@@ -133,8 +133,8 @@ void show_full_help() {
         "  6=Brown  7=LightGray  8=DarkGray  9=LightBlue\n"
         "  10=LightGreen  11=LightCyan  12=LightRed  13=LightMagenta\n"
         "  14=Yellow  15=White\n\n"
-        "For support: https://github.com/shamns23/skyos\n"
-        "SkyOS - Simple, Fast, Educational Operating System\n\n";
+        "For support: https://github.com/shamns23/oszoos\n"
+        "oszoOS - Simple, Fast, Educational Operating System\n\n";
     
     print_with_pagination(help_text);
 }

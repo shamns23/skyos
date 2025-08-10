@@ -1,6 +1,6 @@
-# SkyOS v4.1
+# oszoOS v4.1
 
-SkyOS is an advanced operating system written in C and Assembly, featuring a custom FAT32 file system implementation.
+oszoOS is an advanced operating system written in C and Assembly, featuring a custom FAT32 file system implementation.
 
 ## Features
 

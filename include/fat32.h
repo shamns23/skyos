@@ -2,7 +2,7 @@
 #define FAT32_H
 
 // FAT32 File System Header
-// SkyOS v4.1 - Advanced File System
+// oszoOS v4.1 - Advanced File System
 
 // FAT32 Directory Entry Structure
 typedef struct {

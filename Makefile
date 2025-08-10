@@ -1,4 +1,4 @@
-# Makefile لبناء نظام تشغيل بسيط - SkyOS v4.1
+# Makefile لبناء نظام تشغيل بسيط - oszoOS v4.1
 
 # تعريف مجلد البناء
 BUILD_DIR = build
@@ -24,7 +24,7 @@ os-image.iso: $(BUILD_DIR)/kernel.elf $(ISO_DIR)/boot/grub/grub.cfg
 $(ISO_DIR)/boot/grub/grub.cfg: $(BUILD_DIR)
 	@echo 'set timeout=0' > $@
 	@echo 'set default=0' >> $@
-	@echo 'menuentry "SkyOS-v4.1" {' >> $@
+	@echo 'menuentry "oszoOS-v4.1" {' >> $@
 	@echo '    multiboot /boot/kernel.elf' >> $@
 	@echo '    boot' >> $@
 	@echo '}' >> $@
@@ -98,7 +98,7 @@ run: all
 
 # عرض معلومات البناء
 info:
-	@echo "=== SkyOS v4.1 Build Information ==="
+	@echo "=== oszoOS v4.1 Build Information ==="
 	@echo "Build Directory: $(BUILD_DIR)"
 	@echo "ISO Directory: $(ISO_DIR)"
 	@echo "Generated Files:"

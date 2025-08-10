@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-// Memory management for SkyOS
+// Memory management for oszoOS
 #define MEMORY_POOL_SIZE (1024 * 1024) // 1MB memory pool
 #define MIN_BLOCK_SIZE 16
 #define MAX_BLOCK_SIZE (MEMORY_POOL_SIZE / 4)

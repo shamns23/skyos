@@ -27,8 +27,8 @@ void init_filesystem() {
     create_directory("tmp");
     
     // Create some default files
-    create_file("readme.txt", "Welcome to SkyOS!\nThis is a simple operating system.\n");
-    create_file("version.txt", "SkyOS v1.0\nBuilt with love\n");
+    create_file("readme.txt", "Welcome to oszoOS!\nThis is a simple operating system.\n");
+    create_file("version.txt", "oszoOS v1.0\nBuilt with love\n");
 }
 
 void get_current_path(char* buffer) {

@@ -544,7 +544,7 @@ static void detect_thermal(ThermalInfo* thermal) {
 
 // Get system hostname
 static void get_hostname(char* hostname) {
-    strcpy(hostname, "SkyOS-PC");
+    strcpy(hostname, "oszoOS-PC");
 }
 
 // Get system uptime using PIT timer
@@ -618,7 +618,7 @@ SystemInfo get_system_info() {
     SystemInfo info;
     
     // OS Information
-    strcpy(info.os_name, "SkyOS");
+    strcpy(info.os_name, "oszoOS");
     strcpy(info.kernel_version, "4.1.1");
     strcpy(info.architecture, "x86_64");
     get_hostname(info.hostname);

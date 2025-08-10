@@ -22,7 +22,7 @@ void editor_display() {
     clear_screen();
     
     // Display file content
-    shell_print_colored("=== SkyOS Text Editor ===", COLOR_INFO, BLACK);
+    shell_print_colored("=== oszoOS Text Editor ===", COLOR_INFO, BLACK);
     shell_print_string("\n");
     
     if (editor_file_index >= 0) {

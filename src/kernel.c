@@ -44,7 +44,7 @@ int main() {
 void kernel_main() {
     clear_screen();
     set_color(LIGHT_GREEN, BLACK);
-    shell_print_string("Welcome to SkyOS! [v4.1 - Advanced Operating System]\n");
+    shell_print_string("Welcome to oszoOS! [v4.1 - Advanced Operating System]\n");
     set_color(WHITE, BLACK);
     shell_print_string("Type 'help' for a list of commands.\n");
     shell_print_string("Enhanced keyboard & FAT32 support. Use 'fat32 init' to initialize FAT32 FS.\n\n");
@@ -64,7 +64,7 @@ void kernel_main() {
     char current_path[256];
     while (1) {
         get_current_path(current_path);
-        shell_print_colored("SkyOS", COLOR_SUCCESS, BLACK);
+        shell_print_colored("oszoOS", COLOR_SUCCESS, BLACK);
         shell_print_colored(" ", WHITE, BLACK);
         shell_print_colored(current_path, COLOR_DIR, BLACK);
         shell_print_colored(" > ", COLOR_WARNING, BLACK);
@@ -325,7 +325,7 @@ void readline(char* buffer, int max_len) {
                     shell_print_char('\n');
                     char current_path[256];
                     get_current_path(current_path);
-                    shell_print_colored("SkyOS", COLOR_SUCCESS, BLACK);
+                    shell_print_colored("oszoOS", COLOR_SUCCESS, BLACK);
                     shell_print_colored(" ", WHITE, BLACK);
                     shell_print_colored(current_path, COLOR_DIR, BLACK);
                     shell_print_colored(" > ", COLOR_WARNING, BLACK);
