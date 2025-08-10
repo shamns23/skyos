@@ -6,13 +6,19 @@
 #define KBD_STATUS_PORT 0x64
 #define KBD_COMMAND_PORT 0x64
 
-// Key flags
-#define KEY_SHIFT 0x01
-#define KEY_CTRL 0x02
-#define KEY_ALT 0x04
-#define KEY_CAPS 0x08
-#define KEY_NUM_LOCK 0x10
-#define KEY_SCROLL_LOCK 0x20
+// Key flags (Linux style - match keyboard.asm)
+#define KEY_LSHIFT 0x01
+#define KEY_RSHIFT 0x02
+#define KEY_CTRL 0x04
+#define KEY_ALT 0x08
+#define KEY_CAPS 0x10
+#define KEY_NUM 0x20
+#define KEY_SCROLL 0x40
+
+// LED flags
+#define LED_NUM 0x02
+#define LED_CAPS 0x04
+#define LED_SCROLL 0x01
 
 // Special key scancodes
 #define KEY_ARROW_UP    0x48

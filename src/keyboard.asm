@@ -177,33 +177,68 @@ set_leds:
 init_keyboard:
     push eax
     
-    ; Enable keyboard
+    ; Disable keyboard and mouse during initialization
     call kbd_wait
-    mov al, 0xAE
+    mov al, 0xAD        ; Disable keyboard
+    out KBD_COMMAND_PORT, al
+    call kbd_wait
+    mov al, 0xA7        ; Disable mouse (if present)
     out KBD_COMMAND_PORT, al
     
-    ; Get current controller configuration
+    ; Flush the output buffer
+.flush_loop:
     call kbd_wait
-    mov al, 0x20
+    in al, KBD_STATUS_PORT
+    test al, 0x01
+    jz .flush_done
+    in al, KBD_DATA_PORT
+    jmp .flush_loop
+.flush_done:
+    
+    ; Set controller configuration byte
+    call kbd_wait
+    mov al, 0x20        ; Read configuration byte
     out KBD_COMMAND_PORT, al
     
     call kbd_wait
     in al, KBD_DATA_PORT
-    or al, 1            ; Enable keyboard interrupt
+    and al, 0x7F        ; Disable keyboard interrupts (using polling)
     push eax
     
-    ; Set configuration
+    ; Write configuration byte back
     call kbd_wait
-    mov al, 0x60
+    mov al, 0x60        ; Write configuration byte
     out KBD_COMMAND_PORT, al
     
     call kbd_wait
     pop eax
     out KBD_DATA_PORT, al
     
+    ; Perform keyboard self-test
+    call kbd_wait
+    mov al, 0xAA        ; Self-test command
+    out KBD_COMMAND_PORT, al
+    call kb_wait
+    
+    ; Enable keyboard
+    call kbd_wait
+    mov al, 0xAE        ; Enable keyboard
+    out KBD_COMMAND_PORT, al
+    
+    ; Reset keyboard
+    call kbd_wait
+    mov al, 0xFF        ; Reset keyboard
+    out KBD_DATA_PORT, al
+    call kb_wait
+    
     ; Set LEDs to default (num-lock on)
     mov byte [kbd_leds], LED_NUM
     call set_leds
+    
+    ; Clear keyboard flags
+    mov byte [kbd_flags], 0
+    mov byte [extended_key], 0
+    mov byte [e1_prefix], 0
     
     call kbd_wait
     pop eax
