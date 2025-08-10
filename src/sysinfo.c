@@ -75,8 +75,6 @@ static uint32_t get_cpu_frequency() {
 
 // Get total system memory using BIOS interrupt
 static uint64_t get_total_memory() {
-    uint32_t mem_kb = 0;
-    
     // Use BIOS interrupt 0x15, EAX=0xE820 to get memory map
     // For now, return a simulated value based on detected memory
     return 1024 * 1024 * 1024; // 1GB as default
@@ -119,6 +117,7 @@ static void get_cpu_family_info(CPUInfo* cpu) {
     uint32_t model = ((eax >> 4) & 0xF) + ((eax >> 12) & 0xF0);
     uint32_t stepping = eax & 0xF;
     
+    (void)model; // Suppress unused variable warning
     itoa(family, cpu->family);
     itoa(stepping, cpu->stepping);
     
@@ -148,7 +147,7 @@ static void detect_detailed_gpu(GPUInfo* gpu) {
     strcpy(gpu->vendor, "NVIDIA/AMD/Intel");
     strcpy(gpu->model, "GeForce RTX 3060/Radeon RX 6700/Intel Iris");
     strcpy(gpu->driver, "nvidia-driver-470/amdgpu/i915");
-    gpu->vram = 6144 * 1024 * 1024; // 6GB VRAM
+    gpu->vram = 6144ULL * 1024 * 1024; // 6GB VRAM
     gpu->resolution_x = 1920;
     gpu->resolution_y = 1080;
     gpu->refresh_rate = 60;
@@ -160,8 +159,8 @@ static void detect_storage(StorageInfo* storage) {
     strcpy(storage->vendor, "Samsung");
     strcpy(storage->model, "SSD 980 PRO");
     strcpy(storage->type, "NVMe SSD");
-    storage->total_size = 1000 * 1024 * 1024 * 1024; // 1TB
-    storage->used_size = 350 * 1024 * 1024 * 1024; // 350GB used
+    storage->total_size = 1000ULL * 1024 * 1024 * 1024; // 1TB
+    storage->used_size = 350ULL * 1024 * 1024 * 1024; // 350GB used
     storage->free_size = storage->total_size - storage->used_size;
     storage->read_speed = 7000; // MB/s
     storage->write_speed = 5000; // MB/s
@@ -371,9 +370,9 @@ void display_detailed_sysinfo() {
     format_memory_size(info.memory.used_ram, buffer);
     shell_print_string(buffer);
     shell_print_string(" (");
-    uint64_t mem_percent = 0;
+    uint32_t mem_percent = 0;
     if (info.memory.total_ram > 0) {
-        mem_percent = (info.memory.used_ram * 100ULL) / info.memory.total_ram;
+        mem_percent = (uint32_t)((info.memory.used_ram * 100ULL) / info.memory.total_ram);
     }
     itoa((int)mem_percent, buffer);
     shell_print_string(buffer);
@@ -445,9 +444,9 @@ void display_detailed_sysinfo() {
     format_memory_size(info.storage.used_size, buffer);
     shell_print_string(buffer);
     shell_print_string(" (");
-    uint64_t storage_percent = 0;
+    uint32_t storage_percent = 0;
     if (info.storage.total_size > 0) {
-        storage_percent = (info.storage.used_size * 100ULL) / info.storage.total_size;
+        storage_percent = (uint32_t)((info.storage.used_size * 100ULL) / info.storage.total_size);
     }
     itoa((int)storage_percent, buffer);
     shell_print_string(buffer);
@@ -579,9 +578,9 @@ void display_fastfetch_style() {
     format_memory_size(info.memory.total_ram, buffer);
     shell_print_string(buffer);
     shell_print_string(" (");
-    uint64_t mem_percent = 0;
+    uint32_t mem_percent = 0;
     if (info.memory.total_ram > 0) {
-        mem_percent = (info.memory.used_ram * 100ULL) / info.memory.total_ram;
+        mem_percent = (uint32_t)((info.memory.used_ram * 100ULL) / info.memory.total_ram);
     }
     itoa((int)mem_percent, buffer);
     shell_print_string(buffer);
