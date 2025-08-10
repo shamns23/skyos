@@ -3,39 +3,7 @@
 #include "display.h"
 #include <stdint.h>
 
-// CPU detection structures
-typedef struct {
-    char vendor[13];
-    char brand[49];
-    uint32_t cores;
-    uint32_t threads;
-    uint32_t frequency;
-} CPUInfo;
 
-// Memory detection structures
-typedef struct {
-    uint64_t total_ram;
-    uint64_t available_ram;
-    uint64_t total_swap;
-    uint64_t available_swap;
-} MemoryInfo;
-
-// GPU detection structures
-typedef struct {
-    char vendor[32];
-    char model[64];
-    uint64_t vram;
-} GPUInfo;
-
-// System information structure
-typedef struct {
-    CPUInfo cpu;
-    MemoryInfo memory;
-    GPUInfo gpu;
-    char os_name[32];
-    char kernel_version[32];
-    char architecture[16];
-} SystemInfo;
 
 // Get CPU vendor using CPUID instruction
 static void get_cpu_vendor(char* vendor) {
