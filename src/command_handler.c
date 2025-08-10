@@ -6,6 +6,7 @@
 #include "string_utils.h"
 #include "fat32.h"
 #include "memory.h"
+#include "fastfetch.h"
 
 // Command handler functions
 static void cmd_clear(char* args __attribute__((unused))) {
@@ -398,12 +399,6 @@ static void cmd_color(char* args) {
     shell_print_string("Color changed\n");
 }
 
-#include "sysinfo.h"
-
-static void cmd_sysinfo(char* args __attribute__((unused))) {
-    display_detailed_sysinfo();
-}
-
 static void cmd_memory(char* args) {
     if (!args) {
         shell_print_colored("Memory Information:\n", COLOR_INFO, BLACK);
@@ -479,7 +474,7 @@ static void cmd_fastfetch(char* args __attribute__((unused))) {
 }
 
 static void cmd_hardware(char* args __attribute__((unused))) {
-    display_detailed_sysinfo();
+    display_fastfetch_style();
 }
 
 static void cmd_write(char* args) {
@@ -715,7 +710,7 @@ static const CommandEntry command_table[] = {
     {"chmod", cmd_chmod},
     {"touch", cmd_touch},
     {"color", cmd_color},
-    {"sysinfo", cmd_sysinfo},
+    
     {"fastfetch", cmd_fastfetch},
     {"hardware", cmd_hardware},
     {"write", cmd_write},

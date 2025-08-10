@@ -58,7 +58,6 @@ void show_quick_help() {
     shell_print_string("  write <file> <text> - Write to file\n\n");
     shell_print_string("  System Commands:\n");
     shell_print_string("  clear        - Clear screen\n");
-    shell_print_string("  sysinfo      - System information\n");
     shell_print_string("  fastfetch    - Stylized system info\n");
     shell_print_string("  memory       - Memory management and info\n");
     shell_print_string("  color <f> <b> - Set colors (0-15)\n");
@@ -95,7 +94,6 @@ void show_full_help() {
         "  mkdir -p <path>  - Create nested directory structure\n\n"
         "SYSTEM & INFORMATION:\n"
         "  clear            - Clear terminal screen\n"
-        "  sysinfo          - Show detailed system information\n"
         "  fastfetch        - Show stylized system info with ASCII art\n"
         "  hardware         - Show hardware detection information\n"
         "  memory           - Memory management and statistics\n"
@@ -153,7 +151,7 @@ void show_command_help(const char* command) {
     else if (strcmp(command, "rm") == 0) show_rm_help();
     else if (strcmp(command, "chmod") == 0) show_chmod_help();
     else if (strcmp(command, "pwd") == 0) show_pwd_help();
-    else if (strcmp(command, "sysinfo") == 0) show_sysinfo_help();
+
     else if (strcmp(command, "fastfetch") == 0) show_fastfetch_help();
     else if (strcmp(command, "hardware") == 0) show_hardware_help();
     else if (strcmp(command, "shutdown") == 0) show_shutdown_help();
@@ -164,7 +162,7 @@ void show_command_help(const char* command) {
         shell_print_colored(command, COLOR_WARNING, BLACK);
         shell_print_string("\n\nAvailable commands:\n");
         shell_print_string("  ls, cd, pwd, mkdir, touch, cat, rm, chmod\n");
-        shell_print_string("  write, clear, sysinfo, fastfetch, color\n");
+    shell_print_string("  write, clear, fastfetch, color\n");
         shell_print_string("  memory, fat32, debug, shutdown\n\n");
         shell_print_string("Use 'help' for quick reference or 'help --full' for complete documentation.\n\n");
     }
@@ -398,15 +396,7 @@ void show_pwd_help() {
     shell_print_string("  /home/user\n\n");
 }
 
-void show_sysinfo_help() {
-    shell_print_colored("\n=== sysinfo - System Information ===\n", COLOR_INFO, BLACK);
-    shell_print_string("Usage: sysinfo\n\n");
-    shell_print_string("Description:\n");
-    shell_print_string("  Displays detailed system information including:\n");
-    shell_print_string("  - Operating system version\n");
-    shell_print_string("  - Memory information\n");
-    shell_print_string("  - Filesystem statistics\n\n");
-}
+
 
 void show_fastfetch_help() {
     shell_print_colored("\n=== fastfetch - Stylized System Info ===\n", COLOR_INFO, BLACK);

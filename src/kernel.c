@@ -8,7 +8,7 @@
 
 #include "shell.h"
 #include "command_handler.h"
-#include "sysinfo.h"
+#include "fastfetch.h"
 // Global variables for kernel
 // Display variables moved to display.c
 // Editor variables moved to editor.c
@@ -51,7 +51,7 @@ void kernel_main() {
     init_keyboard();   
     init_filesystem();
     memory_init();
-    sysinfo_init();
+    fastfetch_init();
     
     shell_print_colored("Initializing FAT32 file system...\n", COLOR_INFO, BLACK);
     if (fat32_init() == 0) {
@@ -103,7 +103,7 @@ void process_cmd(char* cmd) {
         strcmp(command, "chmod") == 0 ||
         strcmp(command, "touch") == 0 ||
         strcmp(command, "color") == 0 ||
-        strcmp(command, "sysinfo") == 0 ||
+
         strcmp(command, "fastfetch") == 0 ||
         strcmp(command, "write") == 0 ||
         strcmp(command, "run") == 0 ||
@@ -351,7 +351,7 @@ void readline(char* buffer, int max_len) {
 int find_matching_commands(const char* prefix, char matches[][128], int max_matches) {
     const char* commands[] = {
         "clear", "help", "help full", "shutdown", "color", "ls", "cd", "mkdir", 
-        "pwd", "cat", "write", "rm", "chmod", "sysinfo", "fastfetch", "touch", "debug",
+        "pwd", "cat", "write", "rm", "chmod", "fastfetch", "touch", "debug",
         "fat32", "fat32 init", "fat32 info", "fat32 switch",
         "help ls", "help cd", "help mkdir", "help touch", "help cat", "help fat32",
         "help color", "help debug", "help write", "help rm", "help chmod", "help pwd",
