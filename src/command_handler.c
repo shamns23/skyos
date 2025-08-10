@@ -478,6 +478,10 @@ static void cmd_fastfetch(char* args __attribute__((unused))) {
     display_fastfetch_style();
 }
 
+static void cmd_hardware(char* args __attribute__((unused))) {
+    display_detailed_sysinfo();
+}
+
 static void cmd_write(char* args) {
     char* saveptr;
     char* filename = strtok_r(args, " ", &saveptr);
@@ -713,6 +717,7 @@ static const CommandEntry command_table[] = {
     {"color", cmd_color},
     {"sysinfo", cmd_sysinfo},
     {"fastfetch", cmd_fastfetch},
+    {"hardware", cmd_hardware},
     {"write", cmd_write},
     {"run", cmd_run},
     {"shutdown", cmd_shutdown},

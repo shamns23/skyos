@@ -97,6 +97,7 @@ void show_full_help() {
         "  clear            - Clear terminal screen\n"
         "  sysinfo          - Show detailed system information\n"
         "  fastfetch        - Show stylized system info with ASCII art\n"
+        "  hardware         - Show hardware detection information\n"
         "  memory           - Memory management and statistics\n"
         "  debug            - Display debug info & filesystem stats\n"
         "  shutdown         - Safely shutdown the system\n\n"
@@ -154,6 +155,7 @@ void show_command_help(const char* command) {
     else if (strcmp(command, "pwd") == 0) show_pwd_help();
     else if (strcmp(command, "sysinfo") == 0) show_sysinfo_help();
     else if (strcmp(command, "fastfetch") == 0) show_fastfetch_help();
+    else if (strcmp(command, "hardware") == 0) show_hardware_help();
     else if (strcmp(command, "shutdown") == 0) show_shutdown_help();
     else if (strcmp(command, "clear") == 0) show_clear_help();
     else if (strcmp(command, "memory") == 0) show_memory_help();
@@ -412,6 +414,17 @@ void show_fastfetch_help() {
     shell_print_string("Description:\n");
     shell_print_string("  Displays system information in a colorful,\n");
     shell_print_string("  stylized format similar to neofetch.\n\n");
+}
+
+void show_hardware_help() {
+    shell_print_colored("\n=== hardware - Hardware Detection ===\n", COLOR_INFO, BLACK);
+    shell_print_string("Usage: hardware\n\n");
+    shell_print_string("Description:\n");
+    shell_print_string("  Displays comprehensive hardware information including:\n");
+    shell_print_string("  - CPU details (vendor, brand, cores, frequency)\n");
+    shell_print_string("  - Memory information (total RAM, usage)\n");
+    shell_print_string("  - GPU information (model, memory)\n");
+    shell_print_string("  - System architecture and specifications\n\n");
 }
 
 void show_shutdown_help() {
