@@ -250,20 +250,23 @@ static void format_memory_size(uint64_t bytes, char* buffer) {
     int unit_index = 0;
     double size = (double)bytes;
     
-    while (size >= 1024 && unit_index < 4) {
-        size /= 1024;
+    while (size >= 1024.0 && unit_index < 4) {
+        size /= 1024.0;
         unit_index++;
     }
     
     if (unit_index == 0) {
         itoa((int)size, buffer);
     } else {
-        // Simple float to string conversion
+        // Simple float to string conversion with overflow protection
         int whole = (int)size;
-        int fraction = (int)((size - whole) * 100);
+        int fraction = (int)((size - (double)whole) * 10.0);
         
-        char whole_str[16];
-        char fraction_str[16];
+        if (fraction < 0) fraction = 0;
+        if (fraction > 9) fraction = 9;
+        
+        char whole_str[32];
+        char fraction_str[8];
         itoa(whole, whole_str);
         itoa(fraction, fraction_str);
         
@@ -368,7 +371,11 @@ void display_detailed_sysinfo() {
     format_memory_size(info.memory.used_ram, buffer);
     shell_print_string(buffer);
     shell_print_string(" (");
-    itoa((info.memory.used_ram * 100) / info.memory.total_ram, buffer);
+    uint64_t mem_percent = 0;
+    if (info.memory.total_ram > 0) {
+        mem_percent = (info.memory.used_ram * 100ULL) / info.memory.total_ram;
+    }
+    itoa((int)mem_percent, buffer);
     shell_print_string(buffer);
     shell_print_string("%) | Available: ");
     format_memory_size(info.memory.available_ram, buffer);
@@ -438,7 +445,11 @@ void display_detailed_sysinfo() {
     format_memory_size(info.storage.used_size, buffer);
     shell_print_string(buffer);
     shell_print_string(" (");
-    itoa((info.storage.used_size * 100) / info.storage.total_size, buffer);
+    uint64_t storage_percent = 0;
+    if (info.storage.total_size > 0) {
+        storage_percent = (info.storage.used_size * 100ULL) / info.storage.total_size;
+    }
+    itoa((int)storage_percent, buffer);
     shell_print_string(buffer);
     shell_print_string("%)\n");
     
@@ -568,7 +579,11 @@ void display_fastfetch_style() {
     format_memory_size(info.memory.total_ram, buffer);
     shell_print_string(buffer);
     shell_print_string(" (");
-    itoa((info.memory.used_ram * 100) / info.memory.total_ram, buffer);
+    uint64_t mem_percent = 0;
+    if (info.memory.total_ram > 0) {
+        mem_percent = (info.memory.used_ram * 100ULL) / info.memory.total_ram;
+    }
+    itoa((int)mem_percent, buffer);
     shell_print_string(buffer);
     shell_print_string("%)\n");
     
