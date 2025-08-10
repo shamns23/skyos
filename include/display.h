@@ -57,5 +57,7 @@ void shell_print_colored(const char* str, int fg, int bg);
 void scroll_screen();
 void shell_print_char(char c);
 void shell_print_string(const char* str);
+void print_int(int value);
+void print_hex(unsigned int value);
 
 #endif // DISPLAY_H

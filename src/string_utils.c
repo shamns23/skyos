@@ -135,3 +135,14 @@ char* itoa(int value, char* str) {
     
     return str;
 }
+
+void* memset(void* s, int c, size_t n) {
+    unsigned char* ptr = (unsigned char*)s;
+    unsigned char value = (unsigned char)c;
+    
+    for (size_t i = 0; i < n; i++) {
+        ptr[i] = value;
+    }
+    
+    return s;
+}

@@ -88,8 +88,12 @@ $(BUILD_DIR)/fastfetch.o: src/fastfetch.c include/fastfetch.h $(BUILD_DIR)
 $(BUILD_DIR)/editor.o: src/editor.c include/editor.h $(BUILD_DIR)
 	gcc $(CFLAGS) -c $< -o $@
 
+# تجميع ملف hardware_detection.c
+$(BUILD_DIR)/hardware_detection.o: src/hardware_detection.c include/hardware_detection.h $(BUILD_DIR)
+	gcc $(CFLAGS) -c $< -o $@
+
 # ربط ملفات النواة
-$(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/fat32.o $(BUILD_DIR)/string_utils.o $(BUILD_DIR)/display.o $(BUILD_DIR)/io.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/filesystem.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/command_handler.o $(BUILD_DIR)/memory.o $(BUILD_DIR)/fastfetch.o $(BUILD_DIR)/editor.o
+$(BUILD_DIR)/kernel.elf: $(BUILD_DIR)/kernel_entry.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/fat32.o $(BUILD_DIR)/string_utils.o $(BUILD_DIR)/display.o $(BUILD_DIR)/io.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/filesystem.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/command_handler.o $(BUILD_DIR)/memory.o $(BUILD_DIR)/fastfetch.o $(BUILD_DIR)/editor.o $(BUILD_DIR)/hardware_detection.o
 	ld -m elf_i386 -o $@ -T config/linker.ld $^ -nostdlib /usr/lib/gcc/x86_64-linux-gnu/13/32/libgcc.a
 
 # تشغيل نظام التشغيل باستخدام QEMU

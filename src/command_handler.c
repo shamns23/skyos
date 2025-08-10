@@ -7,6 +7,7 @@
 #include "fat32.h"
 #include "memory.h"
 #include "fastfetch.h"
+#include "hardware_detection.h"
 
 // Command handler functions
 static void cmd_clear(char* args __attribute__((unused))) {
@@ -477,6 +478,12 @@ static void cmd_hardware(char* args __attribute__((unused))) {
     display_fastfetch_style();
 }
 
+static void cmd_hwinfo(char* args __attribute__((unused))) {
+    shell_print_string("Detecting hardware components...\n");
+    hardware_detection_init();
+    display_hardware_info();
+}
+
 static void cmd_write(char* args) {
     char* saveptr;
     char* filename = strtok_r(args, " ", &saveptr);
@@ -713,6 +720,7 @@ static const CommandEntry command_table[] = {
     
     {"fastfetch", cmd_fastfetch},
     {"hardware", cmd_hardware},
+    {"hwinfo", cmd_hwinfo},
     {"write", cmd_write},
     {"run", cmd_run},
     {"shutdown", cmd_shutdown},

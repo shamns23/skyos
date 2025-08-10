@@ -36,16 +36,6 @@ typedef struct {
         uint64_t used_size;
         char type[16];
     } storage;
-    
-    struct {
-        int current_charge;
-        char status[32];
-    } battery;
-    
-    struct {
-        int cpu_temp;
-        int gpu_temp;
-    } thermal;
 } SystemInfo;
 
 // Function declarations

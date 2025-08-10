@@ -103,3 +103,49 @@ void shell_print_string(const char* str) {
         shell_print_char(*str++);
     }
 }
+
+void print_int(int value) {
+    if (value == 0) {
+        shell_print_char('0');
+        return;
+    }
+    
+    if (value < 0) {
+        shell_print_char('-');
+        value = -value;
+    }
+    
+    char buffer[12]; // Enough for 32-bit int
+    int i = 0;
+    
+    while (value > 0) {
+        buffer[i++] = '0' + (value % 10);
+        value /= 10;
+    }
+    
+    // Print in reverse order
+    for (int j = i - 1; j >= 0; j--) {
+        shell_print_char(buffer[j]);
+    }
+}
+
+void print_hex(unsigned int value) {
+    const char hex_chars[] = "0123456789ABCDEF";
+    char buffer[9]; // 8 hex digits + null terminator
+    int i = 0;
+    
+    if (value == 0) {
+        shell_print_char('0');
+        return;
+    }
+    
+    while (value > 0) {
+        buffer[i++] = hex_chars[value & 0xF];
+        value >>= 4;
+    }
+    
+    // Print in reverse order
+    for (int j = i - 1; j >= 0; j--) {
+        shell_print_char(buffer[j]);
+    }
+}

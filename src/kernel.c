@@ -9,6 +9,7 @@
 #include "shell.h"
 #include "command_handler.h"
 #include "fastfetch.h"
+#include "hardware_detection.h"
 // Global variables for kernel
 // Display variables moved to display.c
 // Editor variables moved to editor.c
@@ -59,7 +60,12 @@ void kernel_main() {
     } else {
         shell_print_colored("FAT32 initialization failed\n", COLOR_ERROR, BLACK);
     }
-    shell_print_char('\n'); 
+    
+    // Initialize hardware detection and display system information using fastfetch
+    shell_print_colored("\nDetecting hardware...\n", COLOR_INFO, BLACK);
+    hardware_detection_init();
+    shell_print_colored("System Information:\n", COLOR_INFO, BLACK);
+    display_fastfetch_style(); 
     char cmd_buffer[128];
     char current_path[256];
     while (1) {

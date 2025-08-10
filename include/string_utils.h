@@ -22,5 +22,6 @@ size_t my_strspn(const char* s, const char* accept);
 size_t my_strcspn(const char* s, const char* reject);
 char* strtok_r(char* str, const char* delim, char** saveptr);
 char* itoa(int value, char* str);
+void* memset(void* s, int c, size_t n);
 
 #endif // STRING_UTILS_H

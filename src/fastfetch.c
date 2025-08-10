@@ -1,10 +1,12 @@
 #include "fastfetch.h"
 #include "display.h"
 #include "string_utils.h"
+#include "hardware_detection.h"
 
 // Get system information
 SystemInfo get_system_info() {
     SystemInfo info;
+    HardwareInfo* hw_info = get_hardware_info();
     
     // Basic system info
     strcpy(info.os_name, "oszoOS v4.1");
@@ -13,35 +15,69 @@ SystemInfo get_system_info() {
     strcpy(info.architecture, "x86_32");
     info.uptime = 3600; // 1 hour for demo
     
-    // CPU info
-    strcpy(info.cpu.vendor, "Intel");
-    strcpy(info.cpu.brand, "Intel Core i7-9700K");
-    info.cpu.cores = 8;
-    info.cpu.threads = 8;
-    info.cpu.frequency = 3600;
+    // CPU info from real hardware detection - using all available data
+    if (hw_info && hw_info->cpu.vendor[0] != '\0') {
+        strcpy(info.cpu.vendor, hw_info->cpu.vendor);
+        if (hw_info->cpu.brand[0] != '\0') {
+            strcpy(info.cpu.brand, hw_info->cpu.brand);
+        } else {
+            strcpy(info.cpu.brand, "Unknown CPU");
+        }
+        info.cpu.cores = 1; // Single core detection
+        info.cpu.threads = 1;
+        info.cpu.frequency = 0; // Frequency not detected in current implementation
+    } else {
+        strcpy(info.cpu.vendor, "Unknown");
+        strcpy(info.cpu.brand, "Unknown CPU");
+        info.cpu.cores = 1;
+        info.cpu.threads = 1;
+        info.cpu.frequency = 0;
+    }
     
-    // Memory info
-    info.memory.total_ram = 4 * 1024 * 1024 * 1024ULL; // 4GB
-    info.memory.used_ram = 2 * 1024 * 1024 * 1024ULL;  // 2GB
+    // Memory info from real hardware detection - using exact values
+    if (hw_info) {
+        info.memory.total_ram = hw_info->memory.total_ram;
+        info.memory.used_ram = hw_info->memory.used_ram;
+    } else {
+        info.memory.total_ram = 256 * 1024 * 1024ULL; // 256MB fallback
+        info.memory.used_ram = 128 * 1024 * 1024ULL;  // 128MB fallback
+    }
     
-    // GPU info
-    strcpy(info.gpu.vendor, "NVIDIA");
-    strcpy(info.gpu.model, "GeForce GTX 1660 Ti");
-    info.gpu.resolution_x = 1920;
-    info.gpu.resolution_y = 1080;
+    // GPU info - detect from PCI devices if available
+    strcpy(info.gpu.vendor, "Unknown");
+    strcpy(info.gpu.model, "Unknown GPU");
+    if (hw_info && hw_info->pci.device_count > 0) {
+        // Look for VGA/Display controller (class 0x03)
+        for (int i = 0; i < hw_info->pci.device_count; i++) {
+            if (hw_info->pci.devices[i].class_code == 0x03) {
+                // Found display controller
+                if (hw_info->pci.devices[i].vendor_id == 0x1013) {
+                    strcpy(info.gpu.vendor, "Cirrus Logic");
+                    strcpy(info.gpu.model, "GD 5446");
+                } else if (hw_info->pci.devices[i].vendor_id == 0x1234) {
+                    strcpy(info.gpu.vendor, "QEMU");
+                    strcpy(info.gpu.model, "Virtual VGA");
+                } else {
+                    strcpy(info.gpu.vendor, "Unknown");
+                    strcpy(info.gpu.model, "PCI Display");
+                }
+                break;
+            }
+        }
+    } else {
+        // Fallback for QEMU
+        strcpy(info.gpu.vendor, "Cirrus Logic");
+        strcpy(info.gpu.model, "GD 5446");
+    }
+    info.gpu.resolution_x = 1024;
+    info.gpu.resolution_y = 768;
     
-    // Storage info
-    info.storage.total_size = 512 * 1024 * 1024 * 1024ULL; // 512GB
-    info.storage.used_size = 128 * 1024 * 1024 * 1024ULL;  // 128GB
-    strcpy(info.storage.type, "SSD");
+    // Storage info - realistic for our OS
+    info.storage.total_size = 1440 * 1024ULL; // 1.44MB floppy equivalent
+    info.storage.used_size = 256 * 1024ULL;   // 256KB used
+    strcpy(info.storage.type, "FAT32");
     
-    // Battery info
-    info.battery.current_charge = 85;
-    strcpy(info.battery.status, "Charging");
-    
-    // Thermal info
-    info.thermal.cpu_temp = 45;
-    info.thermal.gpu_temp = 50;
+    // Remove battery and thermal info as they're not applicable for virtual machines
     
     return info;
 }
@@ -88,15 +124,33 @@ void display_fastfetch_style() {
     shell_print_colored("CPU: ", LIGHT_GREEN, BLACK);
     shell_print_string(info.cpu.brand);
     shell_print_string(" (");
-    itoa(info.cpu.cores, buffer);
-    shell_print_string(buffer);
-    shell_print_string("c/");
-    itoa(info.cpu.threads, buffer);
-    shell_print_string(buffer);
-    shell_print_string("t @ ");
-    itoa(info.cpu.frequency, buffer);
-    shell_print_string(buffer);
-    shell_print_string(" MHz)\n");
+    shell_print_string(info.cpu.vendor);
+    shell_print_string(")\n");
+    
+    // Additional CPU details from hardware detection
+    HardwareInfo* hw_info = get_hardware_info();
+    if (hw_info && hw_info->cpu.vendor[0] != '\0') {
+        shell_print_colored("CPU Details: ", LIGHT_GREEN, BLACK);
+        shell_print_string("Family ");
+        itoa(hw_info->cpu.family, buffer);
+        shell_print_string(buffer);
+        shell_print_string(" Model ");
+        itoa(hw_info->cpu.model, buffer);
+        shell_print_string(buffer);
+        shell_print_string(" Stepping ");
+        itoa(hw_info->cpu.stepping, buffer);
+        shell_print_string(buffer);
+        shell_print_string("\n");
+        
+        shell_print_colored("CPU Features: ", LIGHT_GREEN, BLACK);
+        if (hw_info->cpu.features.sse) shell_print_string("SSE ");
+        if (hw_info->cpu.features.sse2) shell_print_string("SSE2 ");
+        if (hw_info->cpu.features.sse3) shell_print_string("SSE3 ");
+        if (hw_info->cpu.features.ssse3) shell_print_string("SSSE3 ");
+        if (hw_info->cpu.features.sse4_1) shell_print_string("SSE4.1 ");
+        if (hw_info->cpu.features.sse4_2) shell_print_string("SSE4.2 ");
+        shell_print_string("\n");
+    }
     
     shell_print_colored("Memory: ", LIGHT_GREEN, BLACK);
     format_memory_size(info.memory.used_ram, buffer);
@@ -135,24 +189,41 @@ void display_fastfetch_style() {
     shell_print_string(info.storage.type);
     shell_print_string(")\n");
     
-    shell_print_colored("Battery: ", LIGHT_GREEN, BLACK);
-    itoa(info.battery.current_charge, buffer);
-    shell_print_string(buffer);
-    shell_print_string("%");
-    if (info.battery.status[0] != '\0') {
-        shell_print_string(" (");
-        shell_print_string(info.battery.status);
-        shell_print_string(")");
+    // Display PCI devices information from hardware detection
+    if (hw_info && hw_info->pci.device_count > 0) {
+        shell_print_colored("PCI Devices: ", LIGHT_GREEN, BLACK);
+        itoa(hw_info->pci.device_count, buffer);
+        shell_print_string(buffer);
+        shell_print_string(" found\n");
+        
+        // Show first few important devices
+        int shown = 0;
+        for (int i = 0; i < hw_info->pci.device_count && shown < 3; i++) {
+            PCIDevice *dev = &hw_info->pci.devices[i];
+            // Show display controllers, network controllers, and storage controllers
+            if (dev->class_code == 0x03 || dev->class_code == 0x02 || dev->class_code == 0x01) {
+                shell_print_colored("  Device: ", LIGHT_GREEN, BLACK);
+                shell_print_string("Bus ");
+                itoa(dev->bus, buffer);
+                shell_print_string(buffer);
+                shell_print_string(" ");
+                print_hex(dev->vendor_id);
+                shell_print_string(":");
+                print_hex(dev->device_id);
+                
+                // Add device type description
+                if (dev->class_code == 0x03) {
+                    shell_print_string(" (Display)");
+                } else if (dev->class_code == 0x02) {
+                    shell_print_string(" (Network)");
+                } else if (dev->class_code == 0x01) {
+                    shell_print_string(" (Storage)");
+                }
+                shell_print_string("\n");
+                shown++;
+            }
+        }
     }
-    shell_print_char('\n');
-    
-    shell_print_colored("Thermal: ", LIGHT_GREEN, BLACK);
-    itoa(info.thermal.cpu_temp, buffer);
-    shell_print_string(buffer);
-    shell_print_string("°C CPU / ");
-    itoa(info.thermal.gpu_temp, buffer);
-    shell_print_string(buffer);
-    shell_print_string("°C GPU\n");
     
     shell_print_colored("Shell: ", LIGHT_GREEN, BLACK);
     shell_print_string("Custom Shell\n");
