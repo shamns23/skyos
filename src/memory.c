@@ -1,5 +1,6 @@
 #include "memory.h"
 #include "display.h"
+#include "string_utils.h"
 
 // Memory pool - static allocation
 static unsigned char memory_pool[MEMORY_POOL_SIZE];

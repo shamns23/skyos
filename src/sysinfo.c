@@ -75,8 +75,6 @@ static uint32_t get_cpu_frequency() {
 
 // Get total system memory using BIOS interrupt
 static uint64_t get_total_memory() {
-    // Use BIOS interrupt 0x15, EAX=0xE820 to get memory map
-    // For now, return a simulated value based on detected memory
     return 1024 * 1024 * 1024; // 1GB as default
 }
 
@@ -372,7 +370,7 @@ void display_detailed_sysinfo() {
     shell_print_string(" (");
     uint32_t mem_percent = 0;
     if (info.memory.total_ram > 0) {
-        mem_percent = (uint32_t)((info.memory.used_ram * 100ULL) / info.memory.total_ram);
+        mem_percent = (uint32_t)(((long double)info.memory.used_ram * 100.0L) / (long double)info.memory.total_ram);
     }
     itoa((int)mem_percent, buffer);
     shell_print_string(buffer);
@@ -446,7 +444,7 @@ void display_detailed_sysinfo() {
     shell_print_string(" (");
     uint32_t storage_percent = 0;
     if (info.storage.total_size > 0) {
-        storage_percent = (uint32_t)((info.storage.used_size * 100ULL) / info.storage.total_size);
+        storage_percent = (uint32_t)(((long double)info.storage.used_size * 100.0L) / (long double)info.storage.total_size);
     }
     itoa((int)storage_percent, buffer);
     shell_print_string(buffer);
@@ -580,7 +578,7 @@ void display_fastfetch_style() {
     shell_print_string(" (");
     uint32_t mem_percent = 0;
     if (info.memory.total_ram > 0) {
-        mem_percent = (uint32_t)((info.memory.used_ram * 100ULL) / info.memory.total_ram);
+        mem_percent = (uint32_t)(((long double)info.memory.used_ram * 100.0L) / (long double)info.memory.total_ram);
     }
     itoa((int)mem_percent, buffer);
     shell_print_string(buffer);
