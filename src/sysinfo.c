@@ -720,7 +720,7 @@ void display_detailed_sysinfo() {
     shell_print_char('\n');
     
     // CPU Information
-    shell_print_colored("🔲 CPU INFORMATION\n", LIGHT_CYAN, BLACK);
+    shell_print_colored("CPU INFORMATION\n", LIGHT_CYAN, BLACK);
     shell_print_colored("   Model: ", LIGHT_GREEN, BLACK);
     shell_print_string(info.cpu.brand);
     shell_print_char('\n');
@@ -833,7 +833,7 @@ void display_detailed_sysinfo() {
     shell_print_char('\n');
     
     // Storage Information
-    shell_print_colored("💿 STORAGE INFORMATION\n", LIGHT_CYAN, BLACK);
+    shell_print_colored(" STORAGE INFORMATION\n", LIGHT_CYAN, BLACK);
     shell_print_colored("   Device: ", LIGHT_GREEN, BLACK);
     shell_print_string(info.storage.vendor);
     shell_print_string(" ");

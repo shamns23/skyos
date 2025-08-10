@@ -453,21 +453,21 @@ static void cmd_memory(char* args) {
         void* ptr3 = malloc(50);
         
         if (ptr1 && ptr2 && ptr3) {
-            shell_print_colored("✓ Allocations successful\n", COLOR_SUCCESS, BLACK);
+            shell_print_colored("Allocations successful\n", COLOR_SUCCESS, BLACK);
             
             free(ptr2);
-            shell_print_colored("✓ Free test successful\n", COLOR_SUCCESS, BLACK);
+            shell_print_colored("Free test successful\n", COLOR_SUCCESS, BLACK);
             
             void* ptr4 = malloc(150);
             if (ptr4) {
-                shell_print_colored("✓ Reallocation test successful\n", COLOR_SUCCESS, BLACK);
+                shell_print_colored("Reallocation test successful\n", COLOR_SUCCESS, BLACK);
                 free(ptr4);
             }
             
             free(ptr1);
             free(ptr3);
         } else {
-            shell_print_colored("✗ Memory allocation failed\n", COLOR_ERROR, BLACK);
+            shell_print_colored("Memory allocation failed\n", COLOR_ERROR, BLACK);
         }
     } else {
         shell_print_colored("Usage: memory <dump|check|test>\n", COLOR_INFO, BLACK);

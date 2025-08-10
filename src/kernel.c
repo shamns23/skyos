@@ -55,9 +55,9 @@ void kernel_main() {
     
     shell_print_colored("Initializing FAT32 file system...\n", COLOR_INFO, BLACK);
     if (fat32_init() == 0) {
-        shell_print_colored("✓ FAT32 initialized successfully (512KB)\n", COLOR_SUCCESS, BLACK);
+        shell_print_colored("FAT32 initialized successfully (512KB)\n", COLOR_SUCCESS, BLACK);
     } else {
-        shell_print_colored("✗ FAT32 initialization failed\n", COLOR_ERROR, BLACK);
+        shell_print_colored("FAT32 initialization failed\n", COLOR_ERROR, BLACK);
     }
     shell_print_char('\n'); 
     char cmd_buffer[128];
