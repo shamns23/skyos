@@ -64,9 +64,9 @@ $(BUILD_DIR)/display.o: src/display.c include/display.h $(BUILD_DIR)
 $(BUILD_DIR)/io.o: src/io.c include/io.h $(BUILD_DIR)
 	gcc $(CFLAGS) -c $< -o $@
 
-# تجميع ملف keyboard.asm
-$(BUILD_DIR)/keyboard.o: src/keyboard.asm $(BUILD_DIR)
-	nasm $< -f elf32 -o $@
+# تجميع ملف keyboard.c
+$(BUILD_DIR)/keyboard.o: src/keyboard.c include/keyboard.h $(BUILD_DIR)
+	gcc $(CFLAGS) -c $< -o $@
 
 # تجميع ملف filesystem.c
 $(BUILD_DIR)/filesystem.o: src/filesystem.c include/filesystem.h $(BUILD_DIR)
