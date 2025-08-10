@@ -146,3 +146,31 @@ void* memset(void* s, int c, size_t n) {
     
     return s;
 }
+
+// Safe string functions to prevent buffer overflows
+char* safe_strcpy(char* dest, const char* src, size_t dest_size) {
+    if (!dest || !src || dest_size == 0) return dest;
+    
+    size_t i = 0;
+    while (i < dest_size - 1 && src[i] != '\0') {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+    return dest;
+}
+
+char* safe_strcat(char* dest, const char* src, size_t dest_size) {
+    if (!dest || !src || dest_size == 0) return dest;
+    
+    size_t dest_len = my_strlen(dest);
+    if (dest_len >= dest_size - 1) return dest; // No space for concatenation
+    
+    size_t i = 0;
+    while (dest_len + i < dest_size - 1 && src[i] != '\0') {
+        dest[dest_len + i] = src[i];
+        i++;
+    }
+    dest[dest_len + i] = '\0';
+    return dest;
+}

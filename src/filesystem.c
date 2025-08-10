@@ -11,7 +11,7 @@ unsigned int fat32_current_cluster = 0;
 
 void init_filesystem() {
     // Initialize root directory
-    strcpy(filesystem[0].name, "/");
+    SAFE_STRCPY(filesystem[0].name, "/", MAX_FILENAME);
     filesystem[0].type = TYPE_DIR;
     filesystem[0].permissions = 0755;
     filesystem[0].parent_dir = -1;
@@ -33,7 +33,7 @@ void init_filesystem() {
 
 void get_current_path(char* buffer) {
     if (current_dir == 0) {
-        strcpy(buffer, "/");
+        SAFE_STRCPY(buffer, "/", 256);
         return;
     }
     
@@ -43,15 +43,15 @@ void get_current_path(char* buffer) {
     int dir = current_dir;
     while (dir != -1 && dir != 0) {
         char temp[256];
-        strcpy(temp, "/");
-        strcat(temp, filesystem[dir].name);
-        strcat(temp, temp_path);
-        strcpy(temp_path, temp);
+        SAFE_STRCPY(temp, "/", sizeof(temp));
+        SAFE_STRCAT(temp, filesystem[dir].name, sizeof(temp));
+        SAFE_STRCAT(temp, temp_path, sizeof(temp));
+        SAFE_STRCPY(temp_path, temp, sizeof(temp_path));
         dir = filesystem[dir].parent_dir;
     }
     
-    strcpy(buffer, temp_path);
-    if (buffer[0] == '\0') strcpy(buffer, "/");
+    SAFE_STRCPY(buffer, temp_path, 256);
+    if (buffer[0] == '\0') SAFE_STRCPY(buffer, "/", 256);
 }
 
 int find_entry(const char* name) {
@@ -74,7 +74,9 @@ int create_file(const char* name, const char* content) {
         return -1;
     }
     
-    strcpy(filesystem[fs_entry_count].name, name);
+    // Use safe string copy for filename
+    SAFE_STRCPY(filesystem[fs_entry_count].name, name, MAX_FILENAME);
+    
     if (content) {
         my_strncpy(filesystem[fs_entry_count].content, content, MAX_CONTENT - 1);
         filesystem[fs_entry_count].content[MAX_CONTENT - 1] = '\0';
@@ -101,7 +103,8 @@ int create_directory(const char* name) {
         return -1;
     }
     
-    strcpy(filesystem[fs_entry_count].name, name);
+    // Use safe string copy for directory name
+    SAFE_STRCPY(filesystem[fs_entry_count].name, name, MAX_FILENAME);
     filesystem[fs_entry_count].type = TYPE_DIR;
     filesystem[fs_entry_count].permissions = 0755;
     filesystem[fs_entry_count].parent_dir = current_dir;
@@ -198,10 +201,10 @@ int mkdir_p(const char* path) {
     my_strncpy(path_copy, path, sizeof(path_copy) - 1);
     path_copy[sizeof(path_copy) - 1] = '\0';
     
-    int original_dir = current_dir;
+    int traversal_dir = current_dir;  // Use local variable for traversal
     
     if (path_copy[0] == '/') {
-        current_dir = 0;
+        traversal_dir = 0;
     }
     
     char* saveptr;
@@ -213,26 +216,35 @@ int mkdir_p(const char* path) {
             continue;
         }
         
-        int found = find_entry(token);
+        // Find entry in traversal directory
+        int found = -1;
+        for (int i = 0; i < fs_entry_count; i++) {
+            if (filesystem[i].parent_dir == traversal_dir && strcmp(filesystem[i].name, token) == 0) {
+                found = i;
+                break;
+            }
+        }
+        
         if (found == -1) {
             // Directory doesn't exist, create it
+            int saved_current = current_dir;
+            current_dir = traversal_dir;
             int new_dir = create_directory(token);
+            current_dir = saved_current;
+            
             if (new_dir == -1) {
-                current_dir = original_dir;
                 return -1;
             }
-            current_dir = new_dir;
+            traversal_dir = new_dir;
         } else {
             if (filesystem[found].type != TYPE_DIR) {
-                current_dir = original_dir;
                 return -1; // Path component is not a directory
             }
-            current_dir = found;
+            traversal_dir = found;
         }
         
         token = strtok_r(NULL, "/", &saveptr);
     }
     
-    current_dir = original_dir;
     return 0;
 }
