@@ -40,26 +40,53 @@ int main() {
 }
 
 void kernel_main() {
-    // Write directly to VGA buffer for debugging
-    volatile char *video = (volatile char*)0xB8000;
-    const char *msg = "oszoOS v4.1 - Kernel Started Successfully!";
+    // Clear screen using display functions
+    clear_screen();
     
-    // Clear screen first
-    for (int i = 0; i < 80 * 25 * 2; i += 2) {
-        video[i] = ' ';
-        video[i + 1] = 0x07; // Light gray on black
-    }
+    // Print welcome message
+    shell_print_colored("\n\n", WHITE, BLACK);
+    shell_print_colored("    ██████╗ ███████╗███████╗ ██████╗  ██████╗ ███████╗\n", COLOR_SUCCESS, BLACK);
+    shell_print_colored("   ██╔═══██╗██╔════╝╚══███╔╝██╔═══██╗██╔═══██╗██╔════╝\n", COLOR_SUCCESS, BLACK);
+    shell_print_colored("   ██║   ██║███████╗  ███╔╝ ██║   ██║██║   ██║███████╗\n", COLOR_SUCCESS, BLACK);
+    shell_print_colored("   ██║   ██║╚════██║ ███╔╝  ██║   ██║██║   ██║╚════██║\n", COLOR_SUCCESS, BLACK);
+    shell_print_colored("   ╚██████╔╝███████║███████╗╚██████╔╝╚██████╔╝███████║\n", COLOR_SUCCESS, BLACK);
+    shell_print_colored("    ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚═════╝ ╚══════╝\n", COLOR_SUCCESS, BLACK);
+    shell_print_colored("\n", WHITE, BLACK);
+    shell_print_colored("                    Welcome to oszoOS v4.1\n", COLOR_INFO, BLACK);
+    shell_print_colored("                 Advanced Operating System\n\n", COLOR_WARNING, BLACK);
     
-    // Write startup message
-    for (int i = 0; msg[i] != '\0'; i++) {
-        video[i * 2] = msg[i];
-        video[i * 2 + 1] = 0x0A; // Light green on black
-    }
+    // Initialize systems
+    shell_print_colored("[INFO] Initializing keyboard...\n", COLOR_INFO, BLACK);
+    init_keyboard();
     
-    // Simple infinite loop to test if kernel loads
+    shell_print_colored("[INFO] Initializing filesystem...\n", COLOR_INFO, BLACK);
+    init_filesystem();
+    
+    shell_print_colored("[INFO] Initializing memory management...\n", COLOR_INFO, BLACK);
+    memory_init();
+    
+    shell_print_colored("[SUCCESS] System initialization complete!\n", COLOR_SUCCESS, BLACK);
+    shell_print_colored("[INFO] Type 'help' for available commands.\n\n", COLOR_INFO, BLACK);
+    
+    // Main shell loop
+    char cmd_buffer[256];
     while (1) {
-        // Do nothing, just keep the kernel running
-        __asm__ volatile ("hlt");
+        // Show prompt
+        char current_path[256];
+        get_current_path(current_path);
+        shell_print_colored("oszoOS", COLOR_SUCCESS, BLACK);
+        shell_print_colored(" ", WHITE, BLACK);
+        shell_print_colored(current_path, COLOR_DIR, BLACK);
+        shell_print_colored(" > ", COLOR_WARNING, BLACK);
+        set_color(WHITE, BLACK);
+        
+        // Read command
+        readline(cmd_buffer, sizeof(cmd_buffer));
+        
+        // Process command if not empty
+        if (cmd_buffer[0] != '\0') {
+            process_cmd(cmd_buffer);
+        }
     }
 }
 void process_cmd(char* cmd) {
