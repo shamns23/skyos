@@ -150,29 +150,25 @@ int handle_cursor_keys(unsigned char scancode) {
         return 0;
     }
     
-    // Return special key codes for arrow keys
+    // Always return special key codes for arrow keys and navigation keys
     switch (scancode) {
-        case 0x48: return extended_key ? ARROW_UP : '8';
-        case 0x50: return extended_key ? ARROW_DOWN : '2';
-        case 0x4B: return extended_key ? ARROW_LEFT : '4';
-        case 0x4D: return extended_key ? ARROW_RIGHT : '6';
-        case 0x47: return extended_key ? KEY_HOME_CODE : '7';
-        case 0x4F: return extended_key ? KEY_END_CODE : '1';
-        case 0x53: return extended_key ? KEY_DEL_CODE : '.';
+        case 0x48: return ARROW_UP;     // Up arrow
+        case 0x50: return ARROW_DOWN;   // Down arrow
+        case 0x4B: return ARROW_LEFT;   // Left arrow
+        case 0x4D: return ARROW_RIGHT;  // Right arrow
+        case 0x47: return KEY_HOME_CODE; // Home
+        case 0x4F: return KEY_END_CODE;  // End
+        case 0x53: return KEY_DEL_CODE;  // Delete
     }
     
-    // E0 prefix forces cursor movement
-    if (extended_key) {
-        return cur_table[key_index];
+    // For numeric keypad, check num lock state
+    if (kbd_leds & LED_NUM && !(kbd_flags & (KEY_LSHIFT | KEY_RSHIFT))) {
+        // Num lock on and no shift - return numeric keypad character
+        return num_table[key_index];
     }
     
-    // Num lock off or shift pressed forces cursor
-    if (!(kbd_leds & LED_NUM) || (kbd_flags & (KEY_LSHIFT | KEY_RSHIFT))) {
-        return cur_table[key_index];
-    }
-    
-    // Return numeric keypad character
-    return num_table[key_index];
+    // Return 0 for other keys to avoid unwanted characters
+    return 0;
 }
 
 // Handle function keys

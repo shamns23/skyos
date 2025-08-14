@@ -2,6 +2,7 @@
 #define STRING_UTILS_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 // Custom string functions to avoid conflicts with builtin functions
 #define strlen my_strlen
@@ -26,6 +27,7 @@ size_t my_strspn(const char* s, const char* accept);
 size_t my_strcspn(const char* s, const char* reject);
 char* strtok_r(char* str, const char* delim, char** saveptr);
 char* itoa(int value, char* str);
+char* itoa_hex(uint32_t value, char* str);
 void* memset(void* s, int c, size_t n);
 
 // Safe string functions

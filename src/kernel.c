@@ -41,62 +41,25 @@ int main() {
 
 void kernel_main() {
     // Write directly to VGA buffer for debugging
-    char *video = (char*)0xB8000;
-    const char *msg1 = "oszoOS v4.1 - Kernel Started!";
+    volatile char *video = (volatile char*)0xB8000;
+    const char *msg = "oszoOS v4.1 - Kernel Started Successfully!";
     
-    // Clear screen
+    // Clear screen first
     for (int i = 0; i < 80 * 25 * 2; i += 2) {
         video[i] = ' ';
-        video[i + 1] = 0x07;
+        video[i + 1] = 0x07; // Light gray on black
     }
     
     // Write startup message
-    for (int i = 0; msg1[i] != '\0'; i++) {
-        video[i * 2] = msg1[i];
-        video[i * 2 + 1] = 0x0F;
+    for (int i = 0; msg[i] != '\0'; i++) {
+        video[i * 2] = msg[i];
+        video[i * 2 + 1] = 0x0A; // Light green on black
     }
     
-    // Initialize basic systems step by step
-    const char *msg2 = "Initializing keyboard...";
-    for (int i = 0; msg2[i] != '\0'; i++) {
-        video[160 + i * 2] = msg2[i];
-        video[160 + i * 2 + 1] = 0x07;
-    }
-    init_keyboard();
-    
-    const char *msg3 = "Initializing filesystem...";
-    for (int i = 0; msg3[i] != '\0'; i++) {
-        video[320 + i * 2] = msg3[i];
-        video[320 + i * 2 + 1] = 0x07;
-    }
-    init_filesystem();
-    
-    const char *msg4 = "Initializing memory...";
-    for (int i = 0; msg4[i] != '\0'; i++) {
-        video[480 + i * 2] = msg4[i];
-        video[480 + i * 2 + 1] = 0x07;
-    }
-    memory_init();
-    
-    const char *msg5 = "System ready! Type 'help' for commands.";
-    for (int i = 0; msg5[i] != '\0'; i++) {
-        video[640 + i * 2] = msg5[i];
-        video[640 + i * 2 + 1] = 0x0A;
-    }
-    
-    // Simple command loop
-    char cmd_buffer[128];
+    // Simple infinite loop to test if kernel loads
     while (1) {
-        const char *prompt = "oszoOS > ";
-        for (int i = 0; prompt[i] != '\0'; i++) {
-            video[800 + i * 2] = prompt[i];
-            video[800 + i * 2 + 1] = 0x0E;
-        }
-        
-        readline(cmd_buffer, sizeof(cmd_buffer));
-        if (cmd_buffer[0] != '\0') {
-            process_cmd(cmd_buffer);
-        }
+        // Do nothing, just keep the kernel running
+        __asm__ volatile ("hlt");
     }
 }
 void process_cmd(char* cmd) {

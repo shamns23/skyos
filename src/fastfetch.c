@@ -9,26 +9,26 @@ SystemInfo get_system_info() {
     HardwareInfo* hw_info = get_hardware_info();
     
     // Basic system info
-    strcpy(info.os_name, "oszoOS v4.1");
-    strcpy(info.kernel_version, "4.1.0");
-    strcpy(info.hostname, "oszoOS-PC");
-    strcpy(info.architecture, "x86_32");
+    SAFE_STRCPY(info.os_name, "oszoOS v4.1", sizeof(info.os_name));
+    SAFE_STRCPY(info.kernel_version, "4.1.0", sizeof(info.kernel_version));
+    SAFE_STRCPY(info.hostname, "oszoOS-PC", sizeof(info.hostname));
+    SAFE_STRCPY(info.architecture, "x86_32", sizeof(info.architecture));
     info.uptime = 3600; // 1 hour for demo
     
     // CPU info from real hardware detection - using all available data
     if (hw_info && hw_info->cpu.vendor[0] != '\0') {
-        strcpy(info.cpu.vendor, hw_info->cpu.vendor);
+        SAFE_STRCPY(info.cpu.vendor, hw_info->cpu.vendor, sizeof(info.cpu.vendor));
         if (hw_info->cpu.brand[0] != '\0') {
-            strcpy(info.cpu.brand, hw_info->cpu.brand);
+            SAFE_STRCPY(info.cpu.brand, hw_info->cpu.brand, sizeof(info.cpu.brand));
         } else {
-            strcpy(info.cpu.brand, "Unknown CPU");
+            SAFE_STRCPY(info.cpu.brand, "Unknown CPU", sizeof(info.cpu.brand));
         }
         info.cpu.cores = 1; // Single core detection
         info.cpu.threads = 1;
         info.cpu.frequency = 0; // Frequency not detected in current implementation
     } else {
-        strcpy(info.cpu.vendor, "Unknown");
-        strcpy(info.cpu.brand, "Unknown CPU");
+        SAFE_STRCPY(info.cpu.vendor, "Unknown", sizeof(info.cpu.vendor));
+        SAFE_STRCPY(info.cpu.brand, "Unknown CPU", sizeof(info.cpu.brand));
         info.cpu.cores = 1;
         info.cpu.threads = 1;
         info.cpu.frequency = 0;
@@ -44,30 +44,30 @@ SystemInfo get_system_info() {
     }
     
     // GPU info - detect from PCI devices if available
-    strcpy(info.gpu.vendor, "Unknown");
-    strcpy(info.gpu.model, "Unknown GPU");
+    SAFE_STRCPY(info.gpu.vendor, "Unknown", sizeof(info.gpu.vendor));
+    SAFE_STRCPY(info.gpu.model, "Unknown GPU", sizeof(info.gpu.model));
     if (hw_info && hw_info->pci.device_count > 0) {
         // Look for VGA/Display controller (class 0x03)
         for (int i = 0; i < hw_info->pci.device_count; i++) {
             if (hw_info->pci.devices[i].class_code == 0x03) {
                 // Found display controller
                 if (hw_info->pci.devices[i].vendor_id == 0x1013) {
-                    strcpy(info.gpu.vendor, "Cirrus Logic");
-                    strcpy(info.gpu.model, "GD 5446");
+                    SAFE_STRCPY(info.gpu.vendor, "Cirrus Logic", sizeof(info.gpu.vendor));
+                    SAFE_STRCPY(info.gpu.model, "GD 5446", sizeof(info.gpu.model));
                 } else if (hw_info->pci.devices[i].vendor_id == 0x1234) {
-                    strcpy(info.gpu.vendor, "QEMU");
-                    strcpy(info.gpu.model, "Virtual VGA");
+                    SAFE_STRCPY(info.gpu.vendor, "QEMU", sizeof(info.gpu.vendor));
+                    SAFE_STRCPY(info.gpu.model, "Virtual VGA", sizeof(info.gpu.model));
                 } else {
-                    strcpy(info.gpu.vendor, "Unknown");
-                    strcpy(info.gpu.model, "PCI Display");
+                    SAFE_STRCPY(info.gpu.vendor, "Unknown", sizeof(info.gpu.vendor));
+                    SAFE_STRCPY(info.gpu.model, "PCI Display", sizeof(info.gpu.model));
                 }
                 break;
             }
         }
     } else {
         // Fallback for QEMU
-        strcpy(info.gpu.vendor, "Cirrus Logic");
-        strcpy(info.gpu.model, "GD 5446");
+        SAFE_STRCPY(info.gpu.vendor, "Cirrus Logic", sizeof(info.gpu.vendor));
+        SAFE_STRCPY(info.gpu.model, "GD 5446", sizeof(info.gpu.model));
     }
     info.gpu.resolution_x = 1024;
     info.gpu.resolution_y = 768;
@@ -75,11 +75,41 @@ SystemInfo get_system_info() {
     // Storage info - realistic for our OS
     info.storage.total_size = 1440 * 1024ULL; // 1.44MB floppy equivalent
     info.storage.used_size = 256 * 1024ULL;   // 256KB used
-    strcpy(info.storage.type, "FAT32");
+    SAFE_STRCPY(info.storage.type, "FAT32", sizeof(info.storage.type));
     
     // Remove battery and thermal info as they're not applicable for virtual machines
     
     return info;
+}
+
+// Helper function to format memory sizes
+void format_memory_size(uint64_t size, char* buffer) {
+    const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+    int unit_index = 0;
+    long double display_size = (long double)size;
+    
+    while (display_size >= 1024.0L && unit_index < 4) {
+        display_size /= 1024.0L;
+        unit_index++;
+    }
+    
+    if (unit_index == 0) {
+        itoa((uint32_t)display_size, buffer);
+    } else {
+        // Format with one decimal place
+        uint32_t whole = (uint32_t)display_size;
+        uint32_t fraction = (uint32_t)((display_size - whole) * 10.0L);
+        
+        char whole_str[16];
+        itoa(whole, whole_str);
+        char fraction_str[8];
+        itoa(fraction, fraction_str);
+        
+        SAFE_STRCPY(buffer, whole_str, 32);
+        SAFE_STRCAT(buffer, ".", 32);
+        SAFE_STRCAT(buffer, fraction_str, 32);
+        SAFE_STRCAT(buffer, units[unit_index], 32);
+    }
 }
 
 // Display enhanced fastfetch-style system information
@@ -199,72 +229,26 @@ void display_fastfetch_style() {
         // Show first few important devices
         int shown = 0;
         for (int i = 0; i < hw_info->pci.device_count && shown < 3; i++) {
-            PCIDevice *dev = &hw_info->pci.devices[i];
-            // Show display controllers, network controllers, and storage controllers
-            if (dev->class_code == 0x03 || dev->class_code == 0x02 || dev->class_code == 0x01) {
-                shell_print_colored("  Device: ", LIGHT_GREEN, BLACK);
-                shell_print_string("Bus ");
-                itoa(dev->bus, buffer);
+            if (hw_info->pci.devices[i].class_code == 0x03 || 
+                hw_info->pci.devices[i].class_code == 0x02 || 
+                hw_info->pci.devices[i].class_code == 0x01) {
+                shell_print_colored("  - ", LIGHT_GREEN, BLACK);
+                shell_print_string("Vendor 0x");
+                itoa_hex(hw_info->pci.devices[i].vendor_id, buffer);
                 shell_print_string(buffer);
-                shell_print_string(" ");
-                print_hex(dev->vendor_id);
-                shell_print_string(":");
-                print_hex(dev->device_id);
-                
-                // Add device type description
-                if (dev->class_code == 0x03) {
-                    shell_print_string(" (Display)");
-                } else if (dev->class_code == 0x02) {
-                    shell_print_string(" (Network)");
-                } else if (dev->class_code == 0x01) {
-                    shell_print_string(" (Storage)");
-                }
-                shell_print_string("\n");
+                shell_print_string(" Device 0x");
+                itoa_hex(hw_info->pci.devices[i].device_id, buffer);
+                shell_print_string(buffer);
+                shell_print_char('\n');
                 shown++;
             }
         }
     }
     
-    shell_print_colored("Shell: ", LIGHT_GREEN, BLACK);
-    shell_print_string("Custom Shell\n");
-    
-    shell_print_colored("Terminal: ", LIGHT_GREEN, BLACK);
-    shell_print_string("Virtual Terminal\n");
+    shell_print_colored("\n", BLACK, BLACK);
 }
 
-// Format memory size to human-readable format
-void format_memory_size(uint64_t bytes, char* buffer) {
-    const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-    int unit_index = 0;
-    double size = (double)bytes;
-    
-    while (size >= 1024.0 && unit_index < 4) {
-        size /= 1024.0;
-        unit_index++;
-    }
-    
-    if (unit_index == 0) {
-        itoa((int)size, buffer);
-    } else {
-        // Simple float to string conversion with overflow protection
-        int whole = (int)size;
-        int fraction = (int)((size - (double)whole) * 10.0);
-        
-        if (fraction < 0) fraction = 0;
-        if (fraction > 9) fraction = 9;
-        
-        char whole_str[32];
-        char fraction_str[8];
-        itoa(whole, whole_str);
-        itoa(fraction, fraction_str);
-        
-        strcpy(buffer, whole_str);
-        strcat(buffer, ".");
-        strcat(buffer, fraction_str);
-    }
-    
-    strcat(buffer, units[unit_index]);
-}
+
 
 // Initialize fastfetch system
 void fastfetch_init() {

@@ -5,18 +5,9 @@
 section .multiboot
 align 4
 multiboot_header:
-    dd 0x1BADB002            ; magic number
-    dd 0x00000003            ; flags: page align + memory info
-    dd -(0x1BADB002 + 0x00000003)  ; checksum
-    dd 0                     ; header_addr
-    dd 0                     ; load_addr
-    dd 0                     ; load_end_addr
-    dd 0                     ; bss_end_addr
-    dd 0                     ; entry_addr
-    dd 0                     ; mode_type
-    dd 0                     ; width
-    dd 0                     ; height
-    dd 0                     ; depth
+    dd 0x1BADB002            ; magic number (required)
+    dd 0x00000003            ; flags: page align modules and provide memory map
+    dd -(0x1BADB002 + 0x00000003)  ; checksum (magic + flags + checksum = 0)
 
 section .text
 global _start
@@ -26,6 +17,9 @@ extern timer_handler
 _start:
     ; إعداد المكدس
     mov esp, stack_top
+    
+    ; تأكد من أن المكدس محاذي على 16 بايت
+    and esp, 0xFFFFFFF0
     
     ; استدعاء دالة main في النواة
     call main

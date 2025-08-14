@@ -136,6 +136,37 @@ char* itoa(int value, char* str) {
     return str;
 }
 
+char* itoa_hex(uint32_t value, char* str) {
+    if (value == 0) {
+        str[0] = '0';
+        str[1] = '\0';
+        return str;
+    }
+    
+    const char* hex_chars = "0123456789ABCDEF";
+    int i = 0;
+    
+    while (value != 0) {
+        str[i++] = hex_chars[value & 0xF];
+        value >>= 4;
+    }
+    
+    str[i] = '\0';
+    
+    // Reverse the string
+    int start = 0;
+    int end = i - 1;
+    while (start < end) {
+        char temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        start++;
+        end--;
+    }
+    
+    return str;
+}
+
 void* memset(void* s, int c, size_t n) {
     unsigned char* ptr = (unsigned char*)s;
     unsigned char value = (unsigned char)c;

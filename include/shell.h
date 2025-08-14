@@ -31,4 +31,9 @@ void show_shutdown_help();
 void show_clear_help();
 void show_memory_help();
 
+void readline(char* buffer, int max_len);
+int find_matching_commands(const char* prefix, char matches[][128], int max_matches);
+int find_matching_files(const char* prefix, char matches[][128], int max_matches, int only_files);
+void get_current_path(char* buffer);
+
 #endif // SHELL_H

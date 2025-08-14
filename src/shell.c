@@ -2,6 +2,8 @@
 #include "display.h"
 #include "keyboard.h"
 #include "io.h"
+#include "string_utils.h"
+#include "filesystem.h"
 #include <string.h>
 
 void shutdown() {
@@ -452,4 +454,206 @@ void show_memory_help() {
     shell_print_string("Manages system memory with simple malloc/free implementation.\n");
     shell_print_string("Provides memory statistics and debugging capabilities.\n\n");
     shell_print_string("Tip: Use 'memory check' if experiencing memory issues\n\n");
+}
+
+void readline(char* buffer, int max_len) {
+    int index = 0;
+    int cursor_pos = 0;
+    buffer[0] = '\0';
+    while (1) {
+        int key = get_char();
+        if (key == 0) continue;
+        if (key >= F1_CODE && key <= F12_CODE) {
+            switch (key) {
+                case F1_CODE:
+                    shell_print_char('\n');
+                    show_quick_help();
+                    break;
+                case F2_CODE:
+                    shell_print_string("\n[F2: Clear] ");
+                    clear_screen();
+                    break;
+                case F3_CODE:
+                    shell_print_string("\n[F3: List] ");
+                    break;
+                default:
+                    shell_print_string("\n[Function key pressed]\n");
+                    break;
+            }
+            continue;
+        }
+        if (key == 3) { 
+            shell_print_string("^C\n");
+            buffer[0] = '\0';
+            return;
+        } else if (key == 4) { 
+            shell_print_string("^D\n");
+            buffer[0] = '\0';
+            return;
+        } else if (key == 12) { 
+            clear_screen();
+            continue;
+        } else if (key == 26) { 
+            shell_print_string("^Z\n");
+            continue;
+        }
+        if (key == '\n') {
+            buffer[index] = '\0';
+            shell_print_char('\n');
+            return;
+        } else if (key == 0x08) { 
+            if (cursor_pos > 0) {
+                for (int i = cursor_pos - 1; i < index - 1; i++) {
+                    buffer[i] = buffer[i + 1];
+                }
+                index--;
+                cursor_pos--;
+                buffer[index] = '\0';
+                shell_print_char(0x08);
+                for (int i = cursor_pos; i < index; i++) shell_print_char(buffer[i]);
+                shell_print_char(' ');
+                for (int i = 0; i <= index - cursor_pos; i++) shell_print_char(0x08);
+            }
+        } else if (key == KEY_DEL_CODE) { 
+            if (cursor_pos < index) {
+                for (int i = cursor_pos; i < index - 1; i++) {
+                    buffer[i] = buffer[i + 1];
+                }
+                index--;
+                buffer[index] = '\0';
+                for (int i = cursor_pos; i < index; i++) shell_print_char(buffer[i]);
+                shell_print_char(' ');
+                for (int i = 0; i <= index - cursor_pos; i++) shell_print_char(0x08);
+            }
+        } else if (key == ARROW_LEFT) {
+            if (cursor_pos > 0) {
+                cursor_pos--;
+                shell_print_char(0x08); 
+            }
+        } else if (key == ARROW_RIGHT) {
+            if (cursor_pos < index) {
+                cursor_pos++;
+                shell_print_char(buffer[cursor_pos - 1]); 
+            }
+        } else if (key == KEY_HOME_CODE) { 
+            while (cursor_pos > 0) {
+                cursor_pos--;
+                shell_print_char(0x08);
+            }
+        } else if (key == KEY_END_CODE) { 
+            while (cursor_pos < index) {
+                shell_print_char(buffer[cursor_pos]);
+                cursor_pos++;
+            }
+        } else if (key == '\t') { 
+            buffer[index] = '\0';
+            int word_start = index;
+            while (word_start > 0 && buffer[word_start-1] != ' ') {
+                word_start--;
+            }
+            char prefix[128];
+            int prefix_len = 0;
+            for (int i = word_start; i < index; i++) {
+                prefix[prefix_len++] = buffer[i];
+            }
+            prefix[prefix_len] = '\0';
+            char matches[128][128]; 
+            int match_count = 0;
+            if (word_start == 0) {
+                match_count = find_matching_commands(prefix, matches, 128);
+            } else {
+                match_count = find_matching_files(prefix, matches, 128, 0); 
+            }
+            if (match_count == 1) {
+                int match_len = strlen(matches[0]);
+                for (int i = prefix_len; i < match_len && word_start + i < max_len - 1; i++) {
+                    buffer[word_start + i] = matches[0][i];
+                    shell_print_char(matches[0][i]);
+                    index = word_start + i + 1;
+                }
+                buffer[index] = '\0';
+            } else if (match_count > 1) {
+                int common = prefix_len;
+                int done = 0;
+                while (!done) {
+                    char c = matches[0][common];
+                    if (c == '\0') break;
+                    for (int i = 1; i < match_count; i++) {
+                        if (matches[i][common] != c) {
+                            done = 1;
+                            break;
+                        }
+                    }
+                    if (!done) {
+                        buffer[word_start + common] = c;
+                        shell_print_char(c);
+                        common++;
+                        index = word_start + common;
+                    }
+                }
+                buffer[index] = '\0';
+                if (common == prefix_len) {
+                    shell_print_char('\n');
+                    for (int i = 0; i < match_count; i++) {
+                        shell_print_string(matches[i]);
+                        shell_print_string("  ");
+                    }
+                    shell_print_char('\n');
+                    char current_path[256];
+                    get_current_path(current_path);
+                    shell_print_colored("oszoOS", COLOR_SUCCESS, BLACK);
+                    shell_print_colored(" ", WHITE, BLACK);
+                    shell_print_colored(current_path, COLOR_DIR, BLACK);
+                    shell_print_colored(" > ", COLOR_WARNING, BLACK);
+                    set_color(WHITE, BLACK);
+                    for (int i = 0; i < index; i++) {
+                        shell_print_char(buffer[i]);
+                    }
+                }
+            }
+        } else if (index < max_len - 1 && key >= 32 && key <= 126) {
+            for (int i = index; i > cursor_pos; i--) buffer[i] = buffer[i-1];
+            buffer[cursor_pos] = key;
+            index++;
+            cursor_pos++;
+            for (int i = cursor_pos-1; i < index; i++) shell_print_char(buffer[i]);
+            for (int i = 0; i < index - cursor_pos; i++) shell_print_char(0x08);
+        }
+    }
+}
+
+// Helper function to find matching commands
+int find_matching_commands(const char* prefix, char matches[][128], int max_matches) {
+    const char* commands[] = {"help", "ls", "cd", "cat", "write", "mkdir", "rm", "clear", "pwd", "edit", "fastfetch", "info", "reboot", "shutdown", "version"};
+    int count = sizeof(commands) / sizeof(commands[0]);
+    int match_count = 0;
+    
+    for (int i = 0; i < count && match_count < max_matches; i++) {
+        if (strncmp(commands[i], prefix, strlen(prefix)) == 0) {
+            SAFE_STRCPY(matches[match_count], commands[i], 128);
+            match_count++;
+        }
+    }
+    
+    return match_count;
+}
+
+// Helper function to find matching files
+int find_matching_files(const char* prefix, char matches[][128], int max_matches, int want_dir) {
+    int match_count = 0;
+    
+    for (int i = 0; i < fs_entry_count && match_count < max_matches; i++) {
+        if (filesystem[i].parent_dir == current_dir) {
+            if (want_dir && filesystem[i].type != TYPE_DIR) continue;
+            if (strncmp(filesystem[i].name, prefix, strlen(prefix)) == 0) {
+                SAFE_STRCPY(matches[match_count], filesystem[i].name, 128);
+                if (filesystem[i].type == TYPE_DIR) {
+                    SAFE_STRCAT(matches[match_count], "/", 128);
+                }
+                match_count++;
+            }
+        }
+    }
+    
+    return match_count;
 }
